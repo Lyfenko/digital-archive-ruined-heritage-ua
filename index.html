@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Зруйнована спадщина України | Цифровий архів</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'ukr-blue': '#0057B8',
+              'ukr-yellow': '#FFD700',
+            },
+            fontFamily: {
+              'inter': ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Leaflet CSS */
+      @import 'https://unpkg.com/leaflet/dist/leaflet.css';
+
+      .leaflet-container {
+        /* Прибираємо стандартний фон, щоб використовувати фон контейнера */
+        background: transparent;
+      }
+      .leaflet-popup-content-wrapper {
+        border-radius: 0.5rem;
+        padding: 0;
+      }
+      .leaflet-popup-content {
+        margin: 0;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        width: 200px !important; /* Фіксована ширина попапу */
+        text-align: left;
+      }
+
+      /* Адаптивність */
+      #root {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Кастомна іконка для відображення руйнування */
+      .custom-div-icon {
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
