@@ -34,9 +34,10 @@ const DetailView = ({ objects }) => {
 
   const getDamageColor = (damage) => {
     const colors = {
-      'destroyed': '#E53E3E', // Червоний
-      'heavy': '#F6AD55',     // Помаранчевий
-      'partial': '#3182CE',    // Синій (менш критично)
+      // Використовуємо Tailwind кольори для узгодженості
+      'destroyed': '#E53E3E', // Red-600
+      'heavy': '#F6AD55',     // Orange-400
+      'partial': '#3182CE',    // Blue-600
     }
     return colors[damage] || '#9ca3af'
   }
@@ -70,7 +71,7 @@ const DetailView = ({ objects }) => {
   }
 
   // Перевірка наявності координат
-  const hasCoordinates = object.coordinates && object.coordinates.lat && object.coordinates.lng
+  const hasCoordinates = object.coordinates && object.coordinates.lat !== undefined && object.coordinates.lng !== undefined
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8">
@@ -80,8 +81,8 @@ const DetailView = ({ objects }) => {
 
       <div className="bg-white rounded-2xl shadow-xl p-6 md:p-10 border-t-8" style={{ borderTopColor: getDamageColor(object.damage_level) }}>
 
-        <div className="flex items-start justify-between border-b pb-4 mb-4">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 mb-4">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2 sm:mb-0">
             {object.title}
           </h1>
           <p
@@ -172,7 +173,6 @@ const DetailView = ({ objects }) => {
                 [3D-модель (Blender/Sketchfab)]
               </div>
               <p className="text-xs text-gray-500 mt-3">
-                {/* ВИПРАВЛЕНО: Використовуємо .lat та .lng */}
                 {hasCoordinates ?
                   `Координати: ${object.coordinates.lat.toFixed(4)}, ${object.coordinates.lng.toFixed(4)}`
                   : 'Координати недоступні'}

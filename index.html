@@ -15,6 +15,10 @@
             colors: {
               'ukr-blue': '#0057B8',
               'ukr-yellow': '#FFD700',
+              // Кольори для damage_level
+              'damage-red': '#E53E3E', // destroyed (red-600)
+              'damage-orange': '#F6AD55', // heavy (orange-400)
+              'damage-blue': '#3182CE', // partial (blue-600)
             },
             fontFamily: {
               'inter': ['Inter', 'sans-serif'],
@@ -28,7 +32,6 @@
       @import 'https://unpkg.com/leaflet/dist/leaflet.css';
 
       .leaflet-container {
-        /* Прибираємо стандартний фон, щоб використовувати фон контейнера */
         background: transparent;
       }
       .leaflet-popup-content-wrapper {
@@ -43,11 +46,18 @@
         text-align: left;
       }
 
-      /* Адаптивність */
+      /* Адаптивність: #root тепер займає всю висоту */
       #root {
         height: 100vh;
         display: flex;
         flex-direction: column;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Забезпечуємо, щоб div навколо MapContainer завжди займав решту простору */
+      .h-full-viewport-minus-header {
+        height: calc(100vh - 64px); /* Висота MapView + Sidebar */
       }
 
       /* Кастомна іконка для відображення руйнування */

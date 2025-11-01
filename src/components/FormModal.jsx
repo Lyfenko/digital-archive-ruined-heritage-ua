@@ -17,16 +17,58 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
 
+  const categories = [
+    { value: 'church', label: 'Сакральна споруда' },
+    { value: 'museum', label: 'Музей/Галерея' },
+    { value: 'culture_house', label: 'Палац культури/Театр' },
+    { value: 'monument', label: 'Пам\'ятка/Меморіал' },
+    { value: 'other', label: 'Інше' },
+  ]
+
+  const damageLevels = [
+    { value: 'destroyed', label: 'Повністю ЗРУЙНОВАНО' },
+    { value: 'heavy', label: 'СИЛЬНО ПОШКОДЖЕНО' },
+    { value: 'partial', label: 'ЧАСТКОВО ПОШКОДЖЕНО' },
+  ]
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      coordinates: '',
+      region: '',
+      city_or_settlement: '',
+      category: 'culture_house',
+      damage_level: 'destroyed',
+      damage_date: '',
+      description: '',
+      photo_before_url: '',
+      photo_after_url: '',
+      source_url: ''
+    })
+    setMessage('')
+  }
+
+  const handleClose = () => {
+    resetForm()
+    onClose()
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
     setMessage('')
 
     try {
-      // Перетворення координат
+      // 1. Валідація та перетворення координат
+      // Очікуємо формат "широта, довгота" (наприклад: 50.45, 30.52)
       const coordsMatch = formData.coordinates.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/)
       if (!coordsMatch) {
-        throw new Error('Некоректний формат координат. Використовуйте "широта, довгота"')
+        throw new Error('Некоректний формат координат. Використовуйте "широта, довгота" (наприклад, 50.45, 30.52).')
       }
 
       const [, lat, lng] = coordsMatch
@@ -35,102 +77,82 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
         coordinates: { lat: parseFloat(lat), lng: parseFloat(lng) }
       }
 
+      // 2. Відправлення даних
       const result = await onSubmit(objectData)
 
       if (result.success) {
         setMessage('✅ Дані успішно надіслано на модерацію! Дякуємо за ваш внесок.')
-        // Очищення форми
-        setFormData({
-          title: '',
-          coordinates: '',
-          region: '',
-          city_or_settlement: '',
-          category: 'culture_house',
-          damage_level: 'destroyed',
-          damage_date: '',
-          description: '',
-          photo_before_url: '',
-          photo_after_url: '',
-          source_url: ''
-        })
-        // Закриття модального вікна через 3 секунди
-        setTimeout(() => {
-          onClose()
-          setMessage('')
-        }, 3000)
+        // resetForm() // Залишаємо дані для перегляду успіху
       } else {
-        throw new Error(result.error || 'Помилка відправлення даних')
+         // Обробка помилки, поверненої з App.jsx (наприклад, помилка RLS)
+        throw new Error(result.message || 'Невідома помилка на сервері.')
       }
+
     } catch (error) {
+      console.error('Помилка відправки форми:', error.message)
       setMessage(`❌ Помилка: ${error.message}`)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
-
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 relative max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-ukr-blue text-2xl font-bold"
-        >
-          &times;
-        </button>
+    <div
+      className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300"
+      onClick={handleClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()} // Запобігаємо закриттю при кліку всередині
+      >
+        <div className="sticky top-0 bg-white p-6 border-b z-10 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-ukr-blue">Надіслати інформацію про втрату</h2>
+          <button onClick={handleClose} className="text-gray-500 hover:text-gray-900 transition">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
 
-        <h2 className="text-2xl font-bold mb-6 text-ukr-blue">Повідомити про руйнування</h2>
-        <p className="mb-6 text-sm text-gray-600">
-          Ваша інформація буде надіслана на модерацію та верифікацію.
-          Будь ласка, надавайте тільки точні та перевірені дані.
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Назва об'єкта *
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              placeholder="Наприклад: Будинок культури в Ірпені"
-            />
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Назва та місцезнаходження */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                Назва об'єкта *
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                placeholder="Наприклад, Будинок культури, Ірпінь"
+              />
+            </div>
+            <div>
+              <label htmlFor="coordinates" className="block text-sm font-medium text-gray-700 mb-1">
+                Координати (широта, довгота) *
+              </label>
+              <input
+                type="text"
+                id="coordinates"
+                name="coordinates"
+                value={formData.coordinates}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                placeholder="50.45, 30.52"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Для точності використовуйте формати GPS
+              </p>
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="coordinates" className="block text-sm font-medium text-gray-700 mb-1">
-              GPS-координати (широта, довгота) *
-            </label>
-            <input
-              type="text"
-              id="coordinates"
-              name="coordinates"
-              value={formData.coordinates}
-              onChange={handleChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              placeholder="Наприклад: 50.518, 30.222"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Формат: широта, довгота (можна знайти в Google Maps)
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">
                 Область *
@@ -143,12 +165,12 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
                 onChange={handleChange}
                 required
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="Наприклад: Київська область"
+                placeholder="Київська область"
               />
             </div>
             <div>
               <label htmlFor="city_or_settlement" className="block text-sm font-medium text-gray-700 mb-1">
-                Місто/селище
+                Населений пункт
               </label>
               <input
                 type="text"
@@ -157,12 +179,13 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
                 value={formData.city_or_settlement}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="Наприклад: Ірпінь"
+                placeholder="Ірпінь"
               />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          {/* Категорія та руйнування */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                 Категорія *
@@ -175,17 +198,14 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
               >
-                <option value="culture_house">Будинок культури</option>
-                <option value="church">Церква / Храм</option>
-                <option value="museum">Музей / Галерея</option>
-                <option value="castle">Замок / Фортеця</option>
-                <option value="monument">Пам'ятник / Меморіал</option>
-                <option value="other">Інше</option>
+                {categories.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
               </select>
             </div>
             <div>
               <label htmlFor="damage_level" className="block text-sm font-medium text-gray-700 mb-1">
-                Ступінь пошкодження *
+                Ступінь руйнування *
               </label>
               <select
                 id="damage_level"
@@ -195,48 +215,47 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
                 required
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
               >
-                <option value="destroyed">Повністю зруйновано</option>
-                <option value="heavy">Сильно пошкоджено</option>
-                <option value="partial">Частково пошкоджено</option>
-                <option value="unknown">Невідомо</option>
+                {damageLevels.map(d => (
+                  <option key={d.value} value={d.value}>{d.label}</option>
+                ))}
               </select>
+            </div>
+            <div>
+              <label htmlFor="damage_date" className="block text-sm font-medium text-gray-700 mb-1">
+                Дата пошкодження
+              </label>
+              <input
+                type="date"
+                id="damage_date"
+                name="damage_date"
+                value={formData.damage_date}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+              />
             </div>
           </div>
 
-          <div>
-            <label htmlFor="damage_date" className="block text-sm font-medium text-gray-700 mb-1">
-              Дата пошкодження
-            </label>
-            <input
-              type="date"
-              id="damage_date"
-              name="damage_date"
-              value={formData.damage_date}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-            />
-          </div>
-
+          {/* Опис */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Опис та джерело інформації *
+              Детальний опис
             </label>
             <textarea
               id="description"
               name="description"
-              rows="4"
               value={formData.description}
               onChange={handleChange}
-              required
+              rows="3"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              placeholder="Опишіть об'єкт, характер пошкоджень та надайте посилання на джерело інформації..."
+              placeholder="Коротка історична довідка та деталі пошкоджень"
             />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          {/* Фото URL */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="photo_before_url" className="block text-sm font-medium text-gray-700 mb-1">
-                Фото "До" (URL)
+                Фото "ДО" (URL)
               </label>
               <input
                 type="url"
@@ -250,7 +269,7 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
             </div>
             <div>
               <label htmlFor="photo_after_url" className="block text-sm font-medium text-gray-700 mb-1">
-                Фото "Після" (URL) *
+                Фото "ПІСЛЯ" (URL) *
               </label>
               <input
                 type="url"
@@ -299,6 +318,7 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
               {message}
             </p>
           )}
+
         </form>
       </div>
     </div>

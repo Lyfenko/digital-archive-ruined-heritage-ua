@@ -23,9 +23,10 @@ const GalleryView = ({ objects, loading }) => {
 
   const getDamageColor = (damage) => {
     const colors = {
-      'destroyed': '#0057B8',
-      'heavy': '#FFD700',
-      'partial': '#f87171',
+      // Використовуємо Tailwind кольори для узгодженості
+      'destroyed': '#E53E3E', // Red-600
+      'heavy': '#F6AD55',     // Orange-400
+      'partial': '#3182CE',    // Blue-600
     }
     return colors[damage] || '#9ca3af'
   }
@@ -41,82 +42,85 @@ const GalleryView = ({ objects, loading }) => {
 
   const getCategoryText = (category) => {
     const texts = {
-      'church': 'Церква / Храм',
-      'museum': 'Музей / Галерея',
-      'castle': 'Замок / Фортеця',
-      'culture_house': 'Будинок культури',
-      'monument': "Пам'ятник / Меморіал",
+      'church': 'Сакральна споруда',
+      'museum': 'Музей/Галерея',
+      'culture_house': 'Палац культури/Театр',
+      'monument': 'Пам\'ятка/Меморіал',
+      'other': 'Інше',
     }
-    return texts[category] || 'Інше'
+    return texts[category] || 'Невідома категорія'
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ukr-blue mx-auto"></div>
-          <p className="mt-4 text-gray-600">Завантаження галереї...</p>
-        </div>
-      </div>
-    )
-  }
+  // Об'єкти для фільтрів (для випадаючих списків)
+  const availableCategories = useMemo(() => {
+      const cats = objects.map(o => o.category).filter(Boolean)
+      return [...new Set(cats)]
+  }, [objects])
+
+  const availableDamageLevels = useMemo(() => {
+      const levels = objects.map(o => o.damage_level).filter(Boolean)
+      return [...new Set(levels)]
+  }, [objects])
+
 
   return (
-    <div className="max-w-7xl mx-auto p-4 lg:p-8">
-      <h1 className="text-3xl font-extrabold mb-6 text-ukr-blue">
-        Каталог втраченої спадщини ({filteredObjects.length})
-      </h1>
+    <div className="max-w-7xl mx-auto p-4 md:p-8">
+      <h1 className="text-3xl font-extrabold mb-6 text-ukr-blue">Каталог зруйнованої спадщини</h1>
 
-      {/* Фільтри галереї */}
-      <div className="flex flex-wrap gap-4 mb-8 bg-white p-6 rounded-xl shadow-lg">
+      {/* Фільтри */}
+      <div className="flex flex-wrap gap-4 mb-8 p-4 bg-gray-50 rounded-xl shadow-inner border border-gray-200">
         <input
           type="text"
-          placeholder="Пошук за назвою або регіоном..."
+          placeholder="Пошук (Назва, Регіон)"
           value={filters.search}
           onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          className="flex-grow min-w-[200px] p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue transition"
+          className="p-2 border border-gray-300 rounded-lg focus:ring-ukr-yellow focus:border-ukr-yellow flex-grow min-w-[200px]"
         />
 
         <select
           value={filters.category}
           onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-          className="flex-grow min-w-[150px] pl-3 pr-10 py-3 border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+          className="p-2 border border-gray-300 rounded-lg focus:ring-ukr-yellow focus:border-ukr-yellow"
         >
-          <option value="all">Категорія: Усі</option>
-          <option value="church">Церкви / Храми</option>
-          <option value="museum">Музеї / Галереї</option>
-          <option value="castle">Замки / Фортеці</option>
-          <option value="culture_house">Будинки культури</option>
-          <option value="monument">Пам'ятники</option>
+          <option value="all">Усі категорії</option>
+          {availableCategories.map(cat => (
+            <option key={cat} value={cat}>{getCategoryText(cat)}</option>
+          ))}
         </select>
 
         <select
           value={filters.damage}
           onChange={(e) => setFilters(prev => ({ ...prev, damage: e.target.value }))}
-          className="flex-grow min-w-[150px] pl-3 pr-10 py-3 border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+          className="p-2 border border-gray-300 rounded-lg focus:ring-ukr-yellow focus:border-ukr-yellow"
         >
-          <option value="all">Руйнація: Усі</option>
-          <option value="destroyed">Зруйновано</option>
-          <option value="heavy">Сильно пошкоджено</option>
-          <option value="partial">Частково пошкоджено</option>
+          <option value="all">Усі ступені руйнувань</option>
+          {availableDamageLevels.map(dmg => (
+            <option key={dmg} value={dmg}>{getDamageText(dmg)}</option>
+          ))}
         </select>
+        <div className="text-sm font-semibold p-2 flex items-center">
+            Показано об'єктів: {filteredObjects.length}
+        </div>
       </div>
 
-      {/* Сітка об'єктів */}
-      {filteredObjects.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-lg text-gray-500">Об'єктів за цими критеріями не знайдено.</p>
-          <p className="text-sm text-gray-400 mt-2">Спробуйте змінити фільтри.</p>
+
+      {loading ? (
+        <div className="text-center p-10 text-gray-500">Завантаження...</div>
+      ) : filteredObjects.length === 0 ? (
+        <div className="text-center p-10 text-gray-500">
+          <p className="text-xl font-semibold mb-2">Об'єктів за вашими критеріями не знайдено.</p>
+          <p>Спробуйте змінити фільтри або пошуковий запит.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredObjects.map(obj => {
             const damageColor = getDamageColor(obj.damage_level)
+
             return (
               <Link
-                key={obj.id}
                 to={`/object/${obj.id}`}
-                className="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 transition-transform hover:shadow-2xl hover:scale-[1.02] cursor-pointer block"
+                key={obj.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 hover:shadow-2xl border-t-4"
                 style={{ borderTopColor: damageColor }}
               >
                 <img

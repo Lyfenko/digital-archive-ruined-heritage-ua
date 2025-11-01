@@ -29,7 +29,7 @@ export const transformCoordinates = (obj) => {
   }
 
   // Якщо об'єкт є GeoJSON Point, але повернутий як рядок або незвичайний об'єкт
-  if (Array.isArray(obj.coordinates.coordinates)) {
+  if (obj.coordinates.coordinates && Array.isArray(obj.coordinates.coordinates)) {
     // GeoJSON Point: [longitude, latitude]
     return {
       ...obj,
