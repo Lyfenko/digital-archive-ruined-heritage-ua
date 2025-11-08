@@ -2,163 +2,68 @@ import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 const GalleryView = ({ objects, loading }) => {
-  const [filters, setFilters] = useState({
-    search: '',
-    category: 'all',
-    damage: 'all'
-  })
+  const [page, setPage] = useState(1)
+  const PER_PAGE = 12
 
-  const filteredObjects = useMemo(() => {
-    return objects.filter(obj => {
-      const matchesSearch = filters.search === '' ||
-        obj.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-        obj.region.toLowerCase().includes(filters.search.toLowerCase())
+  const filteredObjects = useMemo(() => objects, [objects])
+  const totalPages = Math.ceil(filteredObjects.length / PER_PAGE)
+  const paginated = filteredObjects.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
-      const matchesCategory = filters.category === 'all' || obj.category === filters.category
-      const matchesDamage = filters.damage === 'all' || obj.damage_level === filters.damage
-
-      return matchesSearch && matchesCategory && matchesDamage
-    })
-  }, [objects, filters])
-
-  const getDamageColor = (damage) => {
-    const colors = {
-      // Використовуємо Tailwind кольори для узгодженості
-      'destroyed': '#E53E3E', // Red-600
-      'heavy': '#F6AD55',     // Orange-400
-      'partial': '#3182CE',    // Blue-600
+  const shareObject = (obj) => {
+    const text = `Зруйнована спадщина: ${obj.title} — ${window.location.origin}/object/${obj.id}`
+    if (navigator.share) {
+      navigator.share({ title: obj.title, text, url: `${window.location.origin}/object/${obj.id}` })
+    } else {
+      navigator.clipboard.writeText(text)
+      alert('Посилання скопійовано!')
     }
-    return colors[damage] || '#9ca3af'
   }
-
-  const getDamageText = (damage) => {
-    const texts = {
-      'destroyed': 'ЗРУЙНОВАНО',
-      'heavy': 'СИЛЬНО ПОШКОДЖЕНО',
-      'partial': 'ЧАСТКОВО ПОШКОДЖЕНО',
-    }
-    return texts[damage] || 'Невідомо'
-  }
-
-  const getCategoryText = (category) => {
-    const texts = {
-      'church': 'Сакральна споруда',
-      'museum': 'Музей/Галерея',
-      'culture_house': 'Палац культури/Театр',
-      'monument': 'Пам\'ятка/Меморіал',
-      'other': 'Інше',
-    }
-    return texts[category] || 'Невідома категорія'
-  }
-
-  // Об'єкти для фільтрів (для випадаючих списків)
-  const availableCategories = useMemo(() => {
-      const cats = objects.map(o => o.category).filter(Boolean)
-      return [...new Set(cats)]
-  }, [objects])
-
-  const availableDamageLevels = useMemo(() => {
-      const levels = objects.map(o => o.damage_level).filter(Boolean)
-      return [...new Set(levels)]
-  }, [objects])
-
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-extrabold mb-6 text-ukr-blue">Каталог зруйнованої спадщини</h1>
-
-      {/* Фільтри */}
-      <div className="flex flex-wrap gap-4 mb-8 p-4 bg-gray-50 rounded-xl shadow-inner border border-gray-200">
-        <input
-          type="text"
-          placeholder="Пошук (Назва, Регіон)"
-          value={filters.search}
-          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          className="p-2 border border-gray-300 rounded-lg focus:ring-ukr-yellow focus:border-ukr-yellow flex-grow min-w-[200px]"
-        />
-
-        <select
-          value={filters.category}
-          onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-          className="p-2 border border-gray-300 rounded-lg focus:ring-ukr-yellow focus:border-ukr-yellow"
-        >
-          <option value="all">Усі категорії</option>
-          {availableCategories.map(cat => (
-            <option key={cat} value={cat}>{getCategoryText(cat)}</option>
-          ))}
-        </select>
-
-        <select
-          value={filters.damage}
-          onChange={(e) => setFilters(prev => ({ ...prev, damage: e.target.value }))}
-          className="p-2 border border-gray-300 rounded-lg focus:ring-ukr-yellow focus:border-ukr-yellow"
-        >
-          <option value="all">Усі ступені руйнувань</option>
-          {availableDamageLevels.map(dmg => (
-            <option key={dmg} value={dmg}>{getDamageText(dmg)}</option>
-          ))}
-        </select>
-        <div className="text-sm font-semibold p-2 flex items-center">
-            Показано об'єктів: {filteredObjects.length}
-        </div>
-      </div>
-
+      <h1 className="text-3xl font-extrabold mb-6 text-ukr-blue dark:text-ukr-yellow">Каталог</h1>
 
       {loading ? (
-        <div className="text-center p-10 text-gray-500">Завантаження...</div>
-      ) : filteredObjects.length === 0 ? (
-        <div className="text-center p-10 text-gray-500">
-          <p className="text-xl font-semibold mb-2">Об'єктів за вашими критеріями не знайдено.</p>
-          <p>Спробуйте змінити фільтри або пошуковий запит.</p>
-        </div>
+        <div className="text-center p-10">Завантаження...</div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredObjects.map(obj => {
-            const damageColor = getDamageColor(obj.damage_level)
-
-            return (
-              <Link
-                to={`/object/${obj.id}`}
-                key={obj.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 hover:shadow-2xl border-t-4"
-                style={{ borderTopColor: damageColor }}
-              >
-                <img
-                  src={obj.photo_after_url}
-                  alt={`Руйнації ${obj.title}`}
-                  className="w-full h-48 object-cover"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/400x300/e53e3e/ffffff?text=ФОТО+НЕ+ДОСТУПНЕ'
-                  }}
-                />
-                <div className="p-5">
-                  <h4 className="font-extrabold text-lg mb-2 text-gray-800 line-clamp-2">
-                    {obj.title}
-                  </h4>
-                  <p className="text-sm text-gray-500 mb-3">
-                    {getCategoryText(obj.category)}, {obj.region}
-                  </p>
-                  <p
-                    className="text-xs font-semibold p-2 inline-block rounded"
-                    style={{
-                      backgroundColor: `${damageColor}20`,
-                      color: damageColor,
-                      border: `1px solid ${damageColor}50`
-                    }}
-                  >
-                    {getDamageText(obj.damage_level)}
-                  </p>
-                  <p className={`text-xs mt-3 ${obj.is_verified ? 'text-green-600' : 'text-yellow-600'}`}>
-                    {obj.is_verified ? '✅ Верифіковано' : '⚠️ На модерації'}
-                  </p>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {paginated.map(obj => (
+              <div key={obj.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border-t-4"
+                   style={{ borderTopColor: obj.damage_level === 'destroyed' ? '#E53E3E' : obj.damage_level === 'heavy' ? '#F6AD55' : '#3182CE' }}>
+                <Link to={`/object/${obj.id}`}>
+                  <div className="relative group">
+                    <img src={obj.photo_after_url} alt={obj.title}
+                         className="w-full h-64 object-cover group-hover:scale-105 transition"/>
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center">
+                      <span className="text-white opacity-0 group-hover:opacity-100 text-lg font-bold">Переглянути</span>
+                    </div>
+                  </div>
+                </Link>
+                <div className="p-4">
+                  <h4 className="font-bold text-lg line-clamp-2 dark:text-white">{obj.title}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{obj.region}</p>
+                  <button onClick={() => shareObject(obj)}
+                          className="mt-2 text-ukr-blue text-sm hover:underline">
+                    Поділитися
+                  </button>
                 </div>
-              </Link>
-            )
-          })}
-        </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Пагінація */}
+          <div className="flex justify-center gap-2 mt-10">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button key={i+1} onClick={() => setPage(i+1)}
+                      className={`px-4 py-2 rounded-lg ${page === i+1 ? 'bg-ukr-blue text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                {i+1}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )
 }
-
 export default GalleryView

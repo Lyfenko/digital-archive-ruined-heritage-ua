@@ -1,72 +1,39 @@
 <!doctype html>
-<html lang="uk">
+<html lang="uk" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Зруйнована спадщина України | Цифровий архів</title>
+    <meta name="description" content="Зруйнована Спадщина України — цифровий архів культурних втрат через війну. Інтерактивна мапа, фото до/після, верифіковані дані." />
+    <meta property="og:title" content="Зруйнована Спадщина України" />
+    <meta property="og:description" content="Карта та каталог знищеної культурної спадщини України" />
+    <meta property="og:image" content="https://i.imgur.com/og-preview.jpg" />
+    <meta property="og:url" content="https://heritage.ukr" />
+    <meta property="og:type" content="website" />
+    <title>Зруйнована Спадщина України — Цифровий архів</title>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             colors: {
               'ukr-blue': '#0057B8',
               'ukr-yellow': '#FFD700',
-              // Кольори для damage_level
-              'damage-red': '#E53E3E', // destroyed (red-600)
-              'damage-orange': '#F6AD55', // heavy (orange-400)
-              'damage-blue': '#3182CE', // partial (blue-600)
             },
-            fontFamily: {
-              'inter': ['Inter', 'sans-serif'],
-            }
+            fontFamily: { inter: ['Inter', 'sans-serif'] },
           }
         }
       }
     </script>
     <style>
-      /* Leaflet CSS */
       @import 'https://unpkg.com/leaflet/dist/leaflet.css';
-
-      .leaflet-container {
-        background: transparent;
-      }
-      .leaflet-popup-content-wrapper {
-        border-radius: 0.5rem;
-        padding: 0;
-      }
-      .leaflet-popup-content {
-        margin: 0;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-        width: 200px !important; /* Фіксована ширина попапу */
-        text-align: left;
-      }
-
-      /* Адаптивність: #root тепер займає всю висоту */
-      #root {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        margin: 0;
-        padding: 0;
-      }
-
-      /* Забезпечуємо, щоб div навколо MapContainer завжди займав решту простору */
-      .h-full-viewport-minus-header {
-        height: calc(100vh - 64px); /* Висота MapView + Sidebar */
-      }
-
-      /* Кастомна іконка для відображення руйнування */
-      .custom-div-icon {
-        border-radius: 50%;
-      }
+      #root { height: 100vh; display: flex; flex-direction: column; }
+      .h-full-viewport-minus-header { height: calc(100vh - 64px); }
     </style>
   </head>
-  <body>
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

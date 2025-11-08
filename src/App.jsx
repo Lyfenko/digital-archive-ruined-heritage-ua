@@ -6,6 +6,9 @@ import DetailView from './components/DetailView'
 import GalleryView from './components/GalleryView'
 import AboutView from './components/AboutView'
 import FormModal from './components/FormModal'
+import AdminPanel from './components/AdminPanel'
+import AdminLogin from './components/AdminLogin'
+import NotFound from './components/NotFound'
 import { heritageAPI, transformCoordinates } from './lib/supabase' // Імпорт transformCoordinates для мок-даних
 
 /**
@@ -430,6 +433,11 @@ function App() {
           <Route path="/about" element={
             <AboutView />
           } />
+      {/* АДМІНКА */}
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
