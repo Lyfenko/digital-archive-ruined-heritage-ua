@@ -416,9 +416,10 @@ function App() {
         <Routes>
           <Route path="/" element={
             <MapView
-              objects={objects}
-              loading={loading}
-              onRefresh={loadObjects}
+                objects={objects}
+                loading={loading}
+                onRefresh={loadObjects}
+                isFormModalOpen={isFormModalOpen}
             />
           } />
           <Route path="/object/:id" element={

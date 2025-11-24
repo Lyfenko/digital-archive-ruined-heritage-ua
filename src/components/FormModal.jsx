@@ -1,3 +1,4 @@
+// src/components/FormModal.jsx
 import { useState } from 'react'
 
 const FormModal = ({ isOpen, onClose, onSubmit }) => {
@@ -64,8 +65,6 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
     setMessage('')
 
     try {
-      // 1. Валідація та перетворення координат
-      // Очікуємо формат "широта, довгота" (наприклад: 50.45, 30.52)
       const coordsMatch = formData.coordinates.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/)
       if (!coordsMatch) {
         throw new Error('Некоректний формат координат. Використовуйте "широта, довгота" (наприклад, 50.45, 30.52).')
@@ -77,251 +76,222 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
         coordinates: { lat: parseFloat(lat), lng: parseFloat(lng) }
       }
 
-      // 2. Відправлення даних
       const result = await onSubmit(objectData)
 
       if (result.success) {
-        setMessage('✅ Дані успішно надіслано на модерацію! Дякуємо за ваш внесок.')
-        // resetForm() // Залишаємо дані для перегляду успіху
+        setMessage('Об\'єкт успішно додано! Очікуйте модерацію.')
+        setTimeout(() => {
+          handleClose()
+        }, 2000)
       } else {
-         // Обробка помилки, поверненої з App.jsx (наприклад, помилка RLS)
-        throw new Error(result.message || 'Невідома помилка на сервері.')
+        setMessage(result.message || 'Помилка при відправці')
       }
-
-    } catch (error) {
-      console.error('Помилка відправки форми:', error.message)
-      setMessage(`❌ Помилка: ${error.message}`)
+    } catch (err) {
+      setMessage(err.message || 'Щось пішло не так')
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  // Якщо модалка закрита — нічого не рендеримо
   if (!isOpen) return null
 
   return (
-    <div
-      className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 transition-opacity duration-300"
-      onClick={handleClose}
-    >
-      <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()} // Запобігаємо закриттю при кліку всередині
-      >
-        <div className="sticky top-0 bg-white p-6 border-b z-10 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-ukr-blue">Надіслати інформацію про втрату</h2>
-          <button onClick={handleClose} className="text-gray-500 hover:text-gray-900 transition">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
+    <>
+      {/* Темний фон + блокування скролу */}
+      <div className="fixed inset-0 bg-black bg-opacity-70 z-[9998] backdrop-blur-sm" onClick={handleClose} />
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Назва та місцезнаходження */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Назва об'єкта *
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="Наприклад, Будинок культури, Ірпінь"
-              />
+      {/* Сама модалка — висока z-index, відступ зверху */}
+      <div className="fixed inset-x-4 top-20 bottom-8 z-[9999] flex items-start justify-center overflow-y-auto py-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-auto my-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          {/* Заголовок + кнопка закриття */}
+          <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-bold text-ukr-blue dark:text-ukr-yellow">
+              Додати об'єкт культурної спадщини
+            </h2>
+            <button
+              onClick={handleClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-3xl leading-none"
+              aria-label="Закрити"
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Форма */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Назва об'єкта *</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                  placeholder="Наприклад: Церква Різдва Пресвятої Богородиці"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Координати (широта, довгота) *</label>
+                <input
+                  type="text"
+                  name="coordinates"
+                  value={formData.coordinates}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue font-mono text-sm"
+                  placeholder="50.4501, 30.5234"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Область *</label>
+                <input
+                  type="text"
+                  name="region"
+                  value={formData.region}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                  placeholder="Київська область"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Місто / Село *</label>
+                <input
+                  type="text"
+                  name="city_or_settlement"
+                  value={formData.city_or_settlement}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                  placeholder="Ірпінь"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Категорія *</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                >
+                  {categories.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ступінь пошкодження *</label>
+                <select
+                  name="damage_level"
+                  value={formData.damage_level}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-ukr-blue"
+                >
+                  {damageLevels.map(d => (
+                    <option key={d.value} value={d.value}>{d.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Дата пошкодження (приблизно)</label>
+                <input
+                  type="date"
+                  name="damage_date"
+                  value={formData.damage_date}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Опис (не обов'язково)</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows="3"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                  placeholder="Додаткова інформація про об'єкт..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Фото "ДО" (URL) *</label>
+                <input
+                  type="url"
+                  name="photo_before_url"
+                  value={formData.photo_before_url}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                  placeholder="https://example.com/photo-before.jpg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Фото "ПІСЛЯ" (URL) *</label>
+                <input
+                  type="url"
+                  name="photo_after_url"
+                  value={formData.photo_after_url}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                  placeholder="https://example.com/photo-after.jpg"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Джерело інформації (посилання) *</label>
+                <input
+                  type="url"
+                  name="source_url"
+                  value={formData.source_url}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
+                  placeholder="https://mkip.gov.ua/... або стаття в ЗМІ"
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="coordinates" className="block text-sm font-medium text-gray-700 mb-1">
-                Координати (широта, довгота) *
-              </label>
-              <input
-                type="text"
-                id="coordinates"
-                name="coordinates"
-                value={formData.coordinates}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="50.45, 30.52"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Для точності використовуйте формати GPS
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-ukr-blue hover:bg-ukr-blue/90 text-white font-bold py-4 rounded-xl transition transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg text-lg"
+              >
+                {isSubmitting ? 'Відправляємо...' : 'Надіслати звіт'}
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="px-8 py-4 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-xl font-semibold transition"
+              >
+                Скасувати
+              </button>
+            </div>
+
+            {message && (
+              <p className={`text-center text-lg font-semibold mt-4 ${message.includes('успішно') ? 'text-green-600' : 'text-red-600'}`}>
+                {message}
               </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">
-                Область *
-              </label>
-              <input
-                type="text"
-                id="region"
-                name="region"
-                value={formData.region}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="Київська область"
-              />
-            </div>
-            <div>
-              <label htmlFor="city_or_settlement" className="block text-sm font-medium text-gray-700 mb-1">
-                Населений пункт
-              </label>
-              <input
-                type="text"
-                id="city_or_settlement"
-                name="city_or_settlement"
-                value={formData.city_or_settlement}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="Ірпінь"
-              />
-            </div>
-          </div>
-
-          {/* Категорія та руйнування */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                Категорія *
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              >
-                {categories.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="damage_level" className="block text-sm font-medium text-gray-700 mb-1">
-                Ступінь руйнування *
-              </label>
-              <select
-                id="damage_level"
-                name="damage_level"
-                value={formData.damage_level}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              >
-                {damageLevels.map(d => (
-                  <option key={d.value} value={d.value}>{d.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="damage_date" className="block text-sm font-medium text-gray-700 mb-1">
-                Дата пошкодження
-              </label>
-              <input
-                type="date"
-                id="damage_date"
-                name="damage_date"
-                value={formData.damage_date}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              />
-            </div>
-          </div>
-
-          {/* Опис */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Детальний опис
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="3"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              placeholder="Коротка історична довідка та деталі пошкоджень"
-            />
-          </div>
-
-          {/* Фото URL */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="photo_before_url" className="block text-sm font-medium text-gray-700 mb-1">
-                Фото "ДО" (URL)
-              </label>
-              <input
-                type="url"
-                id="photo_before_url"
-                name="photo_before_url"
-                value={formData.photo_before_url}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="https://example.com/photo-before.jpg"
-              />
-            </div>
-            <div>
-              <label htmlFor="photo_after_url" className="block text-sm font-medium text-gray-700 mb-1">
-                Фото "ПІСЛЯ" (URL) *
-              </label>
-              <input
-                type="url"
-                id="photo_after_url"
-                name="photo_after_url"
-                value={formData.photo_after_url}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-                placeholder="https://example.com/photo-after.jpg"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="source_url" className="block text-sm font-medium text-gray-700 mb-1">
-              Посилання на джерело верифікації *
-            </label>
-            <input
-              type="url"
-              id="source_url"
-              name="source_url"
-              value={formData.source_url}
-              onChange={handleChange}
-              required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue"
-              placeholder="https://mkip.gov.ua/article/..."
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Надайте посилання на офіційне джерело (Мінкульт, ЗМІ, тощо)
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-ukr-blue text-white py-3 rounded-lg font-semibold hover:bg-ukr-blue/90 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Відправлення...' : 'Надіслати звіт'}
-          </button>
-
-          {message && (
-            <p className={`text-center mt-3 text-sm ${
-              message.includes('✅') ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {message}
-            </p>
-          )}
-
-        </form>
+            )}
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
