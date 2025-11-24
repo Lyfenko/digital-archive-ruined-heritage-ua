@@ -80,8 +80,10 @@ const MapView = ({ objects, loading, onRefresh, isFormModalOpen = false }) => {
   }
 
   useEffect(() => {
-    if (map) setTimeout(() => map.invalidateSize(), 100)
-  }, [filters, map])
+    if (map) {
+      setTimeout(() => map.invalidateSize(), 100)
+    }
+  }, [map, filters])
 
   if (loading) {
     return (
@@ -95,145 +97,138 @@ const MapView = ({ objects, loading, onRefresh, isFormModalOpen = false }) => {
   }
 
   return (
-    <div className="h-full">
-      <div className="lg:grid lg:grid-cols-3 xl:grid-cols-4 lg:gap-8 h-full p-4 lg:p-8">
-        {/* Ліва колонка — твоя улюблена */}
-        <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg mb-6 lg:mb-0 lg:h-[calc(100vh-8rem)] overflow-y-auto">
-          {/* ... весь твій код фільтрів і списку без змін ... */}
-          <h2 className="text-xl font-semibold mb-4 text-ukr-blue">Фільтри</h2>
-          <div className="space-y-4 mb-6">
-            <input type="text" placeholder="Пошук за назвою або регіоном..." value={filters.search}
-              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue transition" />
-            <select value={filters.category} onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-ukr-blue focus:border-ukr-blue rounded-lg">
-              <option value="all">Категорія: Усі</option>
-              <option value="church">Церкви / Храми</option>
-              <option value="museum">Музеї / Галереї</option>
-              <option value="castle">Замки / Фортеці</option>
-              <option value="culture_house">Будинки культури</option>
-              <option value="monument">Пам'ятники</option>
-            </select>
-            <select value={filters.damage} onChange={(e) => setFilters(prev => ({ ...prev, damage: e.target.value }))}
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-ukr-blue focus:border-ukr-blue rounded-lg">
-              <option value="all">Руйнація: Усі</option>
-              <option value="destroyed">Повністю зруйновано</option>
-              <option value="heavy">Сильно пошкоджено</option>
-              <option value="partial">Частково пошкоджено</option>
-            </select>
-            <button onClick={onRefresh}
-              className="w-full bg-ukr-blue text-white py-2 rounded-lg font-semibold hover:bg-ukr-blue/90 transition duration-150 shadow-md">
-              Оновити дані
-            </button>
-          </div>
+    <div className="h-full flex flex-col lg:flex-row gap-0 lg:gap-8 p-4 lg:p-8">
 
-          <h3 className="text-xl font-semibold mt-6 mb-3 text-ukr-blue">
-            Об'єкти на мапі ({filteredObjects.length})
-          </h3>
-          <div className="space-y-3">
-            {filteredObjects.length === 0 ? (
-              <p className="text-center text-gray-500 p-4 border rounded-lg">Об'єктів не знайдено</p>
-            ) : (
-              filteredObjects.map(obj => (
-                <div key={obj.id} className="bg-gray-50 p-3 rounded-lg border-l-4 shadow-sm transition hover:shadow-md cursor-pointer"
-                  style={{ borderLeftColor: getDamageColor(obj.damage_level) }}>
-                  <Link to={`/object/${obj.id}`} className="block">
-                    <h4 className="font-semibold text-sm truncate">{obj.title}</h4>
-                    <p className="text-xs text-gray-600">{obj.region} | {getDamageText(obj.damage_level)}</p>
-                    <p className={`text-xs ${obj.is_verified ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {obj.is_verified ? 'Верифіковано' : 'На модерації'}
-                    </p>
-                  </Link>
-                </div>
-              ))
-            )}
-          </div>
+      {/* === ФІЛЬТРИ + СПИСОК — зліва на десктопі/планшеті, знизу на мобілці === */}
+      <div className="w-full lg:w-96 bg-white p-6 rounded-xl shadow-lg lg:h-[calc(100vh-8rem)] overflow-y-auto order-2 lg:order-1">
+        <h2 className="text-xl font-semibold mb-4 text-ukr-blue">Фільтри</h2>
+        <div className="space-y-4 mb-6">
+          <input type="text" placeholder="Пошук за назвою або регіоном..." value={filters.search}
+            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-ukr-blue focus:border-ukr-blue transition" />
+          <select value={filters.category} onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-ukr-blue focus:border-ukr-blue rounded-lg">
+            <option value="all">Категорія: Усі</option>
+            <option value="church">Церкви / Храми</option>
+            <option value="museum">Музеї / Галереї</option>
+            <option value="castle">Замки / Фортеці</option>
+            <option value="culture_house">Будинки культури</option>
+            <option value="monument">Пам'ятники</option>
+          </select>
+          <select value={filters.damage} onChange={(e) => setFilters(prev => ({ ...prev, damage: e.target.value }))}
+            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-ukr-blue focus:border-ukr-blue rounded-lg">
+            <option value="all">Руйнація: Усі</option>
+            <option value="destroyed">Повністю зруйновано</option>
+            <option value="heavy">Сильно пошкоджено</option>
+            <option value="partial">Частково пошкоджено</option>
+          </select>
+          <button onClick={onRefresh}
+            className="w-full bg-ukr-blue text-white py-2 rounded-lg font-semibold hover:bg-ukr-blue/90 transition duration-150 shadow-md">
+            Оновити дані
+          </button>
         </div>
 
-        {/* Права колонка — мапа */}
-        <div className="lg:col-span-2 xl:col-span-3 h-96 lg:h-[calc(100vh-8rem)]">
-          <div className="w-full h-full rounded-xl relative shadow-2xl overflow-hidden">
-            <MapContainer center={[49.0, 31.5]} zoom={6} style={{ height: '100%', width: '100%', borderRadius: '0.75rem' }} ref={setMap}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; OpenStreetMap contributors' />
-              <MapVisibilityController isModalOpen={isFormModalOpen} />
+        <h3 className="text-xl font-semibold mt-6 mb-3 text-ukr-blue">
+          Об'єкти на мапі ({filteredObjects.length})
+        </h3>
+        <div className="space-y-3">
+          {filteredObjects.length === 0 ? (
+            <p className="text-center text-gray-500 p-4 border rounded-lg">Об'єктів не знайдено</p>
+          ) : (
+            filteredObjects.map(obj => (
+              <div key={obj.id} className="bg-gray-50 p-3 rounded-lg border-l-4 shadow-sm transition hover:shadow-md cursor-pointer"
+                style={{ borderLeftColor: getDamageColor(obj.damage_level) }}>
+                <Link to={`/object/${obj.id}`} className="block">
+                  <h4 className="font-semibold text-sm truncate">{obj.title}</h4>
+                  <p className="text-xs text-gray-600">{obj.region} | {getDamageText(obj.damage_level)}</p>
+                  <p className={`text-xs ${obj.is_verified ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {obj.is_verified ? 'Верифіковано' : 'На модерації'}
+                  </p>
+                </Link>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
-              {filteredObjects.map(obj => {
-                if (!obj.coordinates || obj.coordinates.lat == null || obj.coordinates.lng == null) return null
-                return (
-                  <Marker key={obj.id} position={[obj.coordinates.lat, obj.coordinates.lng]} icon={createCustomIcon(obj.damage_level)}>
-                    <Popup>
-                      <div className="p-2 w-[180px]">
-                        <h3 className="font-bold text-base mb-1">{obj.title}</h3>
-                        <p className="text-xs text-gray-500 mb-2">{obj.region}</p>
-                        <p className="text-xs text-gray-600 mb-3">
-                          {getCategoryText(obj.category)} • {getDamageText(obj.damage_level)}
-                        </p>
-                        <Link to={`/object/${obj.id}`}
-                          className="text-ukr-blue hover:text-ukr-blue/80 text-sm font-medium underline block text-center">
-                          Детальніше
-                        </Link>
-                      </div>
-                    </Popup>
-                  </Marker>
-                )
-              })}
-            </MapContainer>
+      {/* === КАРТА — зверху на мобілці, справа на десктопі/планшеті === */}
+      <div className="flex-1 relative order-1 lg:order-2">
+        <div className="w-full h-96 lg:h-full rounded-xl shadow-2xl overflow-hidden">
+          <MapContainer center={[49.0, 31.5]} zoom={6} style={{ height: '100%', width: '100%' }} ref={setMap}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; OpenStreetMap contributors' />
+            <MapVisibilityController isModalOpen={isFormModalOpen} />
 
-            {/* Оновлена легенда — акуратна, красива, з душею */}
-            <div className={`
-              absolute bottom-6 left-6 bg-white/98 backdrop-blur-md 
-              rounded-2xl shadow-xl p-5 z-[1000] border border-gray-200
-              transition-all duration-500 ease-out
-              ${isFormModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}
-            `}>
-              <h3 className="font-bold text-lg text-ukr-blue mb-4 tracking-wide">
-                Ступінь руйнування
-              </h3>
+            {filteredObjects.map(obj => {
+              if (!obj.coordinates || obj.coordinates.lat == null || obj.coordinates.lng == null) return null
+              return (
+                <Marker key={obj.id} position={[obj.coordinates.lat, obj.coordinates.lng]} icon={createCustomIcon(obj.damage_level)}>
+                  <Popup>
+                    <div className="p-2 w-[180px]">
+                      <h3 className="font-bold text-base mb-1">{obj.title}</h3>
+                      <p className="text-xs text-gray-500 mb-2">{obj.region}</p>
+                      <p className="text-xs text-gray-600 mb-3">
+                        {getCategoryText(obj.category)} • {getDamageText(obj.damage_level)}
+                      </p>
+                      <Link to={`/object/${obj.id}`}
+                        className="text-ukr-blue hover:text-ukr-blue/80 text-sm font-medium underline block text-center">
+                        Детальніше
+                      </Link>
+                    </div>
+                  </Popup>
+                </Marker>
+              )
+            })}
+          </MapContainer>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-ukr-blue border-4 border-white shadow-lg flex items-center justify-center">
+          {/* МАЛЕНЬКА ЛЕГЕНДА НА МОБІЛЦІ */}
+          <div className="lg:hidden absolute bottom-4 right-4 bg-white/98 backdrop-blur-md rounded-xl shadow-xl p-3 z-[1000] border border-gray-200 text-xs transition-opacity">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-ukr-blue border-2 border-white shadow"></div><span>Повністю</span></div>
+              <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-ukr-yellow border-2 border-white shadow"></div><span>Сильно</span></div>
+              <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-red-500 border-2 border-white shadow"></div><span>Частково</span></div>
+            </div>
+          </div>
 
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Повністю знищено</p>
-                      <p className="text-xs text-gray-600 mt-0.5">Пам’ятаємо кожну цеглину</p>
-
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-ukr-yellow border-4 border-white shadow-lg flex items-center justify-center">
-
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Сильно пошкоджено</p>
-                      <p className="text-xs text-gray-600 mt-0.5">Потрібна термінова допомога</p>
-
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-red-500 border-4 border-white shadow-lg flex items-center justify-center">
-
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Частково пошкоджено</p>
-                      <p className="text-xs text-gray-600 mt-0.5">Відновимо першими</p>
-
-                  </div>
+          {/* ВЕЛИКА ЛЕГЕНДА — ТІЛЬКИ НА ДЕСКТОПІ ТА ПЛАНШЕТАХ */}
+          <div className={`
+            hidden lg:block absolute bottom-6 left-6 bg-white/98 backdrop-blur-md
+            rounded-2xl shadow-xl p-5 z-[1000] border border-gray-200
+            transition-all duration-500 ease-out
+            ${isFormModalOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}
+          `}>
+            <h3 className="font-bold text-lg text-ukr-blue mb-4 tracking-wide">
+              Ступінь руйнування
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-ukr-blue border-4 border-white shadow-lg"></div>
+                <div>
+                  <p className="font-semibold text-gray-900">Повністю знищено</p>
+                  <p className="text-xs text-gray-600 mt-0.5">Пам’ятаємо кожну цеглину</p>
                 </div>
               </div>
-
-              <div className="mt-5 pt-4 border-t border-gray-200 text-center">
-                <p className="text-xs font-medium text-gray-600 italic">
-                  Нічого не втрачено назавжди.<br />
-                  Пам’ятаємо. Відновимо. Україна переможе.
-                </p>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-ukr-yellow border-4 border-white shadow-lg"></div>
+                <div>
+                  <p className="font-semibold text-gray-900">Сильно пошкоджено</p>
+                  <p className="text-xs text-gray-600 mt-0.5">Потрібна термінова допомога</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-red-500 border-4 border-white shadow-lg"></div>
+                <div>
+                  <p className="font-semibold text-gray-900">Частково пошкоджено</p>
+                  <p className="text-xs text-gray-600 mt-0.5">Відновимо першими</p>
+                </div>
               </div>
             </div>
-
+            <div className="mt-5 pt-4 border-t border-gray-200 text-center">
+              <p className="text-xs font-medium text-gray-600 italic">
+                Нічого не втрачено назавжди.<br />
+                Пам’ятаємо. Відновимо. Україна переможе.
+              </p>
+            </div>
           </div>
         </div>
       </div>
