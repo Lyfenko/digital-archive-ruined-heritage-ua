@@ -83,7 +83,7 @@ const DetailView = ({ objects }) => {
                 <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition">Збільшити</span>
               </div>
             </div>
-            <p className="text-sm text-gray-500 italic text-center">Фото до: {object.damage_date || 'невідомо'}</p>
+            <p className="text-sm text-gray-500 italic text-center">Фото до руйнування</p>
           </div>
 
           {/* ПІСЛЯ */}
