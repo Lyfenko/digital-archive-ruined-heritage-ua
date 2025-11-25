@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Header from './components/Header'
+import Footer from './components/Footer'
 import MapView from './components/MapView'
 import DetailView from './components/DetailView'
 import GalleryView from './components/GalleryView'
@@ -447,6 +448,8 @@ function App() {
         onClose={() => setIsFormModalOpen(false)}
         onSubmit={addNewObject}
       />
+
+        <Footer />
     </div>
   )
 }
