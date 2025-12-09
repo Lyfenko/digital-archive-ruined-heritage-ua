@@ -365,7 +365,7 @@ function App() {
     } catch (error) {
       console.error('Помилка завантаження даних:', error)
       setError('Не вдалося завантажити дані. Перевірте підключення до Supabase або RLS-політики.')
-      // ВИПРАВЛЕННЯ: Тепер Mock Data проходить через ту саму логіку трансформації
+      // Mock Data проходить через ту саму логіку трансформації
       // як і реальні дані, щоб гарантувати єдиний формат {lat, lng}
       // Викликаємо transformCoordinates на мок-даних для гарантії формату
       const transformedMockData = getMockData().map(transformCoordinates)
