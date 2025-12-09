@@ -76,7 +76,7 @@ export default function Footer() {
         </div>
       )}
 
-      {/* САМИЙ ФУТЕР */}
+      {/* ФУТЕР */}
       <footer className="bg-ukr-blue text-white mt-auto relative z-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
