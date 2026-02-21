@@ -1,11 +1,10 @@
-// src/components/AdminLogin.jsx
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('admin@heritage.ua')
-  const [password, setPassword] = useState('12345678')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const navigate = useNavigate()
@@ -15,48 +14,26 @@ const AdminLogin = () => {
     setLoading(true)
     setMessage('')
 
-    // Спочатку пробуємо увійти
-    let { error } = await supabase.auth.signInWithPassword({ email, password })
-
-    // Якщо користувача немає — реєструємо автоматично
-    if (error && error.message.includes('Invalid login credentials')) {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: window.location.origin }
-      })
-
-      if (signUpError) {
-        setMessage('Помилка: ' + signUpError.message)
-        setLoading(false)
-        return
-      }
-
-      setMessage('Адмін створено! Входимо...')
-      // Тепер входимо
-      const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
-      if (loginError) {
-        setMessage('Помилка входу: ' + loginError.message)
-        setLoading(false)
-        return
-      }
-    }
+    // Тільки логін, ніякого signUp
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setMessage('Помилка: ' + error.message)
-    } else {
-      setMessage('Успішно! Переходимо в адмінку...')
-      setTimeout(() => navigate('/admin'), 800)
+      setMessage('Помилка входу: перевірте email та пароль')
+      setLoading(false)
+      return
     }
-    setLoading(false)
+
+    setMessage('Успішний вхід!')
+    navigate('/admin')
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-10 w-full max-w-md">
-        <h1 className="text-4xl font-bold text-ukr-blue dark:text-ukr-yellow text-center mb-8">
-          Адмін-панель
-        </h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border-t-8 border-ukr-blue">
+        <h2 className="text-3xl font-black mb-8 text-center text-gray-900 dark:text-white">
+          Вхід для адміністратора
+        </h2>
+
         <form onSubmit={handleLogin} className="space-y-6">
           <input
             type="email"
@@ -68,7 +45,7 @@ const AdminLogin = () => {
           />
           <input
             type="password"
-            placeholder="Пароль (мін. 8 символів)"
+            placeholder="Пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -79,18 +56,15 @@ const AdminLogin = () => {
             disabled={loading}
             className="w-full bg-ukr-blue hover:bg-ukr-blue/90 text-white py-4 rounded-xl font-bold text-lg shadow-lg disabled:opacity-50 transition transform hover:scale-105"
           >
-            {loading ? 'Зачекайте...' : 'Увійти як адмін'}
+            {loading ? 'Зачекайте...' : 'Увійти'}
           </button>
         </form>
+
         {message && (
-          <p className={`mt-6 text-center font-medium ${message.includes('Успішно') ? 'text-green-600' : 'text-red-600'}`}>
+          <p className={`mt-6 text-center font-medium ${message.includes('Успішний') ? 'text-green-600' : 'text-red-600'}`}>
             {message}
           </p>
         )}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Перший вхід = автоматична реєстрація<br />
-          Email: <code className="bg-gray-200 px-2 rounded">admin@heritage.ua</code>
-        </p>
       </div>
     </div>
   )

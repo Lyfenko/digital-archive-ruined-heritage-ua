@@ -11,7 +11,7 @@
     <meta property="og:type" content="website" />
     <title>Зруйнована Спадщина України — Цифровий архів</title>
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -22,18 +22,19 @@
               'ukr-blue': '#0057B8',
               'ukr-yellow': '#FFD700'
             },
-            fontFamily: { inter: ['Inter', 'sans-serif'] },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'], /* Робить Inter шрифтом за замовчуванням */
+              inter: ['Inter', 'sans-serif']
+            },
           }
         }
       }
     </script>
     <style>
       @import 'https://unpkg.com/leaflet/dist/leaflet.css';
-      #root { height: 100vh; display: flex; flex-direction: column; }
-      .h-full-viewport-minus-header { height: calc(100vh - 64px); }
     </style>
   </head>
-  <body class="bg-gray-50 dark:bg-gray-900 transition-colors">
+  <body class="bg-[#f8fafc] text-slate-900 transition-colors antialiased selection:bg-ukr-yellow selection:text-ukr-blue">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

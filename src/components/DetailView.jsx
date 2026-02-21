@@ -6,7 +6,7 @@ const DetailView = ({ objects }) => {
   const { id } = useParams()
   const [object, setObject] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [modalImage, setModalImage] = useState(null) // Для модалки
+  const [modalImage, setModalImage] = useState(null)
 
   useEffect(() => {
     const loadObject = async () => {
@@ -29,135 +29,121 @@ const DetailView = ({ objects }) => {
   }, [id, objects])
 
   const getDamageColor = (damage) => {
-    const colors = { 'destroyed': '#E53E3E', 'heavy': '#F6AD55', 'partial': '#3182CE' }
-    return colors[damage] || '#9ca3af'
+    const colors = { 'destroyed': '#ef4444', 'heavy': '#eab308', 'partial': '#3b82f6' }
+    return colors[damage] || '#94a3b8'
   }
 
   const getDamageText = (damage) => {
-    const texts = { 'destroyed': 'Повністю ЗРУЙНОВАНО', 'heavy': 'СИЛЬНО ПОШКОДЖЕНО', 'partial': 'ЧАСТКОВО ПОШКОДЖЕНО' }
+    const texts = { 'destroyed': 'Повністю зруйновано', 'heavy': 'Сильно пошкоджено', 'partial': 'Частково пошкоджено' }
     return texts[damage] || 'Невідомо'
   }
 
   const getCategoryText = (category) => {
-    const texts = { 'church': 'Сакральна споруда', 'museum': 'Музей/Галерея', 'culture_house': 'Палац культури/Театр', 'monument': 'Пам\'ятка/Меморіал', 'other': 'Інше' }
-    return texts[category] || 'Невідома категорія'
+    const texts = { 'church': 'Сакральна споруда', 'museum': 'Музей/Галерея', 'culture_house': 'Палац культури', 'monument': 'Пам\'ятка/Меморіал', 'other': 'Інше' }
+    return texts[category] || 'Категорія'
   }
 
-  if (loading) return <div className="text-center p-10 text-gray-500">Завантаження деталей...</div>
-  if (!object) return <div className="text-center p-10 text-red-500">Об'єкт не знайдено.</div>
+  if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ukr-blue"></div></div>
+  if (!object) return <div className="text-center p-10 text-red-500 font-medium">Об'єкт не знайдено.</div>
 
   const hasCoordinates = object.coordinates && object.coordinates.lat !== undefined && object.coordinates.lng !== undefined
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8">
-      <Link to="/" className="text-ukr-blue hover:text-ukr-blue/80 mb-6 inline-block font-medium">
-        ← Повернутися до мапи
+      <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-ukr-blue mb-6 font-medium transition-colors">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        Повернутися
       </Link>
 
-      <div className="bg-white rounded-2xl shadow-xl p-6 md:p-10 border-t-8" style={{ borderTopColor: getDamageColor(object.damage_level) }}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">{object.title}</h1>
-          <span className="text-sm font-bold px-4 py-2 rounded-full mt-4 sm:mt-0" style={{
-            backgroundColor: `${getDamageColor(object.damage_level)}20`,
-            color: getDamageColor(object.damage_level),
-            border: `1px solid ${getDamageColor(object.damage_level)}50`
-          }}>
-            {getDamageText(object.damage_level)}
-          </span>
-        </div>
+      <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden relative">
+        {/* Кольорова лінія статусу */}
+        <div className="h-2 w-full" style={{ backgroundColor: getDamageColor(object.damage_level) }}></div>
 
-        {/* ГАЛЕРЕЯ: ОДИНАКОВИЙ РОЗМІР + КЛІК ДЛЯ ЗБІЛЬШЕННЯ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-          {/* ДО */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-gray-700">До руйнування</h3>
-            <div className="relative overflow-hidden rounded-2xl shadow-xl cursor-pointer group"
-                 onClick={() => setModalImage(object.photo_before_url || 'https://placehold.co/1200x800/3182ce/ffffff?text=ДО+ВІЙНИ')}>
-              <img
-                src={object.photo_before_url || 'https://placehold.co/1200x800/3182ce/ffffff?text=ДО+ВІЙНИ'}
-                alt={`До: ${object.title}`}
-                className="w-full h-96 object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center">
-                <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition">Збільшити</span>
-              </div>
+        <div className="p-8 md:p-12">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-100 pb-6 mb-10 gap-4">
+            <div>
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">{object.city_or_settlement}, {object.region}</p>
+              <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{object.title}</h1>
             </div>
-            <p className="text-sm text-gray-500 italic text-center">Фото до руйнування</p>
+            <span className="text-sm font-bold px-5 py-2.5 rounded-xl shrink-0" style={{
+              backgroundColor: `${getDamageColor(object.damage_level)}15`,
+              color: getDamageColor(object.damage_level),
+            }}>
+              {getDamageText(object.damage_level)}
+            </span>
           </div>
 
-          {/* ПІСЛЯ */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-red-600">Після руйнування</h3>
-            <div className="relative overflow-hidden rounded-2xl shadow-xl cursor-pointer group ring-4 ring-red-300"
-                 onClick={() => setModalImage(object.photo_after_url || 'https://placehold.co/1200x800/e53e3e/ffffff?text=ПІСЛЯ+РУЙНУВАННЯ')}>
-              <img
-                src={object.photo_after_url || 'https://placehold.co/1200x800/e53e3e/ffffff?text=ПІСЛЯ+РУЙНУВАННЯ'}
-                alt={`Після: ${object.title}`}
-                className="w-full h-96 object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center">
-                <span className="text-white text-4xl opacity-0 group-hover:opacity-100 transition">Збільшити</span>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 mb-12">
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-slate-300"></span> До руйнування
+              </h3>
+              <div className="relative overflow-hidden rounded-3xl shadow-sm cursor-pointer group aspect-[4/3]"
+                   onClick={() => setModalImage(object.photo_before_url || 'https://placehold.co/1200x800/e2e8f0/94a3b8?text=Немає+фото')}>
+                <img src={object.photo_before_url || 'https://placehold.co/1200x800/e2e8f0/94a3b8?text=Немає+фото'} alt="До" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition flex items-center justify-center">
+                  <span className="text-white opacity-0 group-hover:opacity-100 transition font-medium px-4 py-2 bg-black/40 backdrop-blur-md rounded-lg">Збільшити</span>
+                </div>
               </div>
             </div>
-            <p className="text-sm text-gray-500 italic text-center">Дата пошкодження: {object.damage_date || 'невідомо'}</p>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-red-600 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500"></span> Після руйнування
+              </h3>
+              <div className="relative overflow-hidden rounded-3xl shadow-sm cursor-pointer group aspect-[4/3] ring-1 ring-red-100"
+                   onClick={() => setModalImage(object.photo_after_url || 'https://placehold.co/1200x800/fee2e2/ef4444?text=Немає+фото')}>
+                <img src={object.photo_after_url || 'https://placehold.co/1200x800/fee2e2/ef4444?text=Немає+фото'} alt="Після" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition flex items-center justify-center">
+                  <span className="text-white opacity-0 group-hover:opacity-100 transition font-medium px-4 py-2 bg-black/40 backdrop-blur-md rounded-lg">Збільшити</span>
+                </div>
+              </div>
+              {object.damage_date && <p className="text-sm text-slate-500 text-center font-medium">Дата фіксації: {new Date(object.damage_date).toLocaleDateString('uk')}</p>}
+            </div>
           </div>
-        </div>
 
-        {/* ОПИС */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">Опис та історія втрат</h3>
-            <p className="text-gray-700 leading-relaxed text-lg mb-6">{object.description}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="lg:col-span-2 space-y-6">
+              <h3 className="text-2xl font-black text-slate-900">Історія об'єкта та опис втрат</h3>
+              <p className="text-slate-600 leading-relaxed text-lg bg-slate-50 p-6 rounded-2xl border border-slate-100">{object.description}</p>
 
-            <div className="bg-gray-50 p-6 rounded-xl space-y-3 text-lg">
-              <p><span className="font-bold text-ukr-blue">Місце:</span> {object.city_or_settlement}, {object.region}</p>
-              <p><span className="font-bold text-ukr-blue">Категорія:</span> {getCategoryText(object.category)}</p>
-              <p>
-                <span className="font-bold text-ukr-blue">Джерело:</span>{' '}
-                {object.source_url ? (
-                  <a href={object.source_url} target="_blank" rel="noopener noreferrer" className="text-ukr-blue hover:underline">
-                    Переглянути оригінал →
+              <div className="flex flex-wrap gap-4 pt-4">
+                <span className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 shadow-sm">
+                  🏢 {getCategoryText(object.category)}
+                </span>
+                {object.source_url && (
+                  <a href={object.source_url} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-sm font-medium transition-colors">
+                    🔗 Офіційне джерело
                   </a>
-                ) : '—'}
-              </p>
-              <p className={`font-bold ${object.is_verified ? 'text-green-600' : 'text-yellow-600'}`}>
-                {object.is_verified ? 'Офіційно підтверджено' : 'Очікує модерації'}
-              </p>
-            </div>
-          </div>
-
-          <div className="lg:col-span-1">
-            <div className="p-6 bg-yellow-50 rounded-2xl border-2 border-yellow-300 shadow-inner">
-              <h4 className="font-bold text-xl text-ukr-blue mb-4">Віртуальний простір</h4>
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-48 flex items-center justify-center text-gray-500">
-                3D-модель (в розробці)
+                )}
+                <span className={`px-4 py-2 rounded-xl text-sm font-medium border ${object.is_verified ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                  {object.is_verified ? '✓ Дані верифіковано' : '⏳ Очікує модерації'}
+                </span>
               </div>
-              {hasCoordinates && (
-                <p className="text-sm mt-4 text-gray-600">
-                  Координати: {object.coordinates.lat.toFixed(5)}, {object.coordinates.lng.toFixed(5)}
-                </p>
-              )}
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm h-full flex flex-col">
+                <h4 className="font-bold text-lg text-slate-900 mb-4">Віртуальний простір</h4>
+                <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl flex-grow min-h-[160px] flex items-center justify-center text-slate-400 font-medium">
+                  3D-модель (в розробці)
+                </div>
+                {hasCoordinates && (
+                  <div className="mt-6 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Координати GPS</p>
+                    <p className="text-slate-700 font-mono text-sm">{object.coordinates.lat.toFixed(5)}, {object.coordinates.lng.toFixed(5)}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* МОДАЛКА ДЛЯ ПОВНОЕКРАННОГО ПЕРЕГЛЯДУ */}
       {modalImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4 cursor-pointer"
-          onClick={() => setModalImage(null)}
-        >
-          <img
-            src={modalImage}
-            alt="Повноекранне фото"
-            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-          />
-          <button className="absolute top-6 right-6 text-white text-5xl hover:text-gray-400 transition">
-            ×
-          </button>
+        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4 cursor-pointer" onClick={() => setModalImage(null)}>
+          <img src={modalImage} alt="Повноекранне фото" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl" />
+          <button className="absolute top-8 right-8 text-white/50 hover:text-white text-5xl transition-colors">×</button>
         </div>
       )}
     </div>

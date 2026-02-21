@@ -59,6 +59,17 @@ const Header = ({ onOpenForm }) => {
               {link.label}
             </Link>
           ))}
+
+          {/* КНОПКА ПІДТРИМКИ (DESKTOP) */}
+          <a
+            href="https://send.monobank.ua/jar/3CkgiNtqFv"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-ukr-yellow text-ukr-blue px-5 py-2 rounded-full shadow-md font-bold hover:bg-yellow-400 transition"
+          >
+            Підтримати
+          </a>
+
           <button
             onClick={onOpenForm}
             className="bg-ukr-blue text-white px-5 py-2 rounded-full shadow-md font-semibold hover:bg-ukr-blue/90 transition"
@@ -110,6 +121,17 @@ const Header = ({ onOpenForm }) => {
                 {link.label}
               </Link>
             ))}
+
+            {/* КНОПКА ПІДТРИМКИ (MOBILE) */}
+            <a
+              href="https://send.monobank.ua/jar/3CkgiNtqFv"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="mt-2 rounded-lg py-3 text-center font-bold bg-ukr-yellow text-ukr-blue shadow-sm hover:bg-yellow-400 transition"
+            >
+              Підтримати проєкт
+            </a>
           </div>
         </div>
       )}

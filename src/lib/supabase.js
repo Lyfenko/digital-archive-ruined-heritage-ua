@@ -10,15 +10,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 export const transformCoordinates = (obj) => {
   if (!obj || !obj.coordinates) return obj
 
-  // Перевірка: Якщо координати вже в фінальному форматі {lat, lng}
   if (obj.coordinates.lat !== undefined && obj.coordinates.lng !== undefined) {
     return obj
   }
 
-  // Перевірка: Якщо координати у форматі PostGIS (GeoJSON) - {x: lng, y: lat}
-  // Supabase часто повертає геометрію у вигляді GeoJSON об'єкта або об'єкта з полями x/y
   if (obj.coordinates.x !== undefined && obj.coordinates.y !== undefined) {
-    // В PostGIS x = довгота (lng), y = широта (lat)
     return {
       ...obj,
       coordinates: {
@@ -28,9 +24,7 @@ export const transformCoordinates = (obj) => {
     }
   }
 
-  // Якщо об'єкт є GeoJSON Point, але повернутий як рядок або незвичайний об'єкт
   if (obj.coordinates.coordinates && Array.isArray(obj.coordinates.coordinates)) {
-    // GeoJSON Point: [longitude, latitude]
     return {
       ...obj,
       coordinates: {
@@ -52,8 +46,6 @@ export const heritageAPI = {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-
-    // Трансформуємо координати для кожного об'єкта
     return data.map(transformCoordinates)
   },
 
@@ -68,10 +60,35 @@ export const heritageAPI = {
     return transformCoordinates(data)
   },
 
-  async addObject(objectData) {
-    // Форматуємо координати для запису в PostGIS: POINT(lng lat)
-    const geoPoint = `POINT(${objectData.coordinates.lng} ${objectData.coordinates.lat})`
+  // НОВА ФУНКЦІЯ ДЛЯ ЗАВАНТАЖЕННЯ ФОТО
+  async uploadImage(file) {
+    // Генеруємо унікальне ім'я файлу, щоб вони не перезаписували один одного
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+    const filePath = `${fileName}`
 
+    const { error: uploadError } = await supabase.storage
+      .from('heritage-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (uploadError) {
+      console.error('Помилка завантаження фото:', uploadError)
+      throw new Error('Не вдалося завантажити фотографію у сховище.')
+    }
+
+    // Отримуємо публічне посилання на завантажений файл
+    const { data } = supabase.storage
+      .from('heritage-images')
+      .getPublicUrl(filePath)
+
+    return data.publicUrl
+  },
+
+  async addObject(objectData) {
+    const geoPoint = `POINT(${objectData.coordinates.lng} ${objectData.coordinates.lat})`
     const { coordinates, ...rest } = objectData
 
     const { data, error } = await supabase
@@ -85,7 +102,7 @@ export const heritageAPI = {
 
     if (error) {
       console.error('Supabase Insert Error:', error.message)
-      throw error // Прокидаємо помилку для обробки в App.jsx
+      throw error
     }
 
     return { success: true, data }

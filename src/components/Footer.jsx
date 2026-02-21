@@ -118,7 +118,7 @@ export default function Footer() {
                 href="https://www.linkedin.com/in/dmytro-lyfenko"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block group"
+                className="block group w-full max-w-[280px]"
               >
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-5 border border-white/20 shadow-xl text-center md:text-left transition-all group-hover:bg-white/20 group-hover:scale-105">
                   <p className="text-2xl font-black text-ukr-yellow group-hover:drop-shadow-lg transition">
@@ -128,6 +128,17 @@ export default function Footer() {
                     Neoversity Woolf
                   </p>
                 </div>
+              </a>
+
+              {/* ДОДАНА КНОПКА ПІДТРИМКИ */}
+              <a
+                href="https://send.monobank.ua/jar/3CkgiNtqFv"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 w-full max-w-[280px] bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:border-ukr-yellow/50 text-white text-center py-2.5 rounded-2xl text-sm font-semibold transition-all hover:scale-105 shadow-md flex items-center justify-center gap-2"
+              >
+                <span className="w-2 h-2 rounded-full bg-ukr-yellow animate-pulse"></span>
+                Підтримати проєкт
               </a>
             </div>
 
