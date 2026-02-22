@@ -1,15 +1,15 @@
-// src/components/DetailView.jsx
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { heritageAPI } from '../lib/supabase'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedData } from '../hooks/useLocalizedData'
+// Імпортуємо компоненти слайдера
+import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
 
 const DetailView = ({ objects }) => {
   const { id } = useParams()
   const [object, setObject] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [modalImage, setModalImage] = useState(null)
 
   // Підключення i18n та хука для бази даних
   const { t, i18n } = useTranslation()
@@ -44,8 +44,6 @@ const DetailView = ({ objects }) => {
   if (!object) return <div className="text-center p-10 text-red-500 font-medium">{t('detail.not_found', "Об'єкт не знайдено.")}</div>
 
   const hasCoordinates = object.coordinates && object.coordinates.lat !== undefined && object.coordinates.lng !== undefined
-
-  // Визначення локалі для форматування дати
   const locale = i18n.language.startsWith('en') ? 'en-US' : 'uk-UA'
 
   return (
@@ -77,37 +75,45 @@ const DetailView = ({ objects }) => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-10 mb-12">
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+          {/* НОВИЙ БЛОК: Інтерактивний слайдер ДО/ПІСЛЯ */}
+          <div className="mb-12">
+            <div className="flex justify-between items-center mb-4 px-2">
+              <h3 className="text-sm md:text-lg font-bold text-slate-800 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-slate-300"></span> {t('detail.before', 'До руйнування')}
               </h3>
-              <div className="relative overflow-hidden rounded-3xl shadow-sm cursor-pointer group aspect-[4/3]"
-                   onClick={() => setModalImage(object.photo_before_url || 'https://placehold.co/1200x800/e2e8f0/94a3b8?text=Немає+фото')}>
-                <img src={object.photo_before_url || 'https://placehold.co/1200x800/e2e8f0/94a3b8?text=Немає+фото'} alt="До" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition flex items-center justify-center">
-                  <span className="text-white opacity-0 group-hover:opacity-100 transition font-medium px-4 py-2 bg-black/40 backdrop-blur-md rounded-lg">Збільшити</span>
-                </div>
-              </div>
+              <p className="hidden md:block text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">
+                {t('detail.drag_hint', '↔ Перетягніть повзунок')}
+              </p>
+              <h3 className="text-sm md:text-lg font-bold text-red-600 flex items-center gap-2">
+                {t('detail.after', 'Після руйнування')} <span className="w-2 h-2 rounded-full bg-red-500"></span>
+              </h3>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-red-600 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500"></span> {t('detail.after', 'Після руйнування')}
-              </h3>
-              <div className="relative overflow-hidden rounded-3xl shadow-sm cursor-pointer group aspect-[4/3] ring-1 ring-red-100"
-                   onClick={() => setModalImage(object.photo_after_url || 'https://placehold.co/1200x800/fee2e2/ef4444?text=Немає+фото')}>
-                <img src={object.photo_after_url || 'https://placehold.co/1200x800/fee2e2/ef4444?text=Немає+фото'} alt="Після" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition flex items-center justify-center">
-                  <span className="text-white opacity-0 group-hover:opacity-100 transition font-medium px-4 py-2 bg-black/40 backdrop-blur-md rounded-lg">Збільшити</span>
-                </div>
-              </div>
-              {object.damage_date && (
-                <p className="text-sm text-slate-500 text-center font-medium">
-                  {t('detail.date', 'Дата фіксації:')} {new Date(object.damage_date).toLocaleDateString(locale)}
-                </p>
-              )}
+            <div className="relative overflow-hidden rounded-3xl shadow-md border border-slate-200 aspect-[4/3] md:aspect-[21/9] bg-slate-100">
+              <ReactCompareSlider
+                className="w-full h-full"
+                boundsPadding={0}
+                itemOne={
+                  <ReactCompareSliderImage
+                    src={object.photo_before_url || 'https://placehold.co/1200x800/e2e8f0/94a3b8?text=Немає+фото'}
+                    alt={t('detail.before', 'До руйнування')}
+                    style={{ objectFit: 'cover' }}
+                  />
+                }
+                itemTwo={
+                  <ReactCompareSliderImage
+                    src={object.photo_after_url || 'https://placehold.co/1200x800/fee2e2/ef4444?text=Немає+фото'}
+                    alt={t('detail.after', 'Після руйнування')}
+                    style={{ objectFit: 'cover' }}
+                  />
+                }
+              />
             </div>
+            {object.damage_date && (
+              <p className="text-sm text-slate-500 text-center font-medium mt-4">
+                {t('detail.date', 'Дата фіксації:')} {new Date(object.damage_date).toLocaleDateString(locale)}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -149,13 +155,6 @@ const DetailView = ({ objects }) => {
           </div>
         </div>
       </div>
-
-      {modalImage && (
-        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4 cursor-pointer" onClick={() => setModalImage(null)}>
-          <img src={modalImage} alt="Повноекранне фото" className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl" />
-          <button className="absolute top-8 right-8 text-white/50 hover:text-white text-5xl transition-colors">×</button>
-        </div>
-      )}
     </div>
   )
 }
