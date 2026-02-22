@@ -1,6 +1,9 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 const AboutView = () => {
+  const { t } = useTranslation()
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-10 mb-12 mt-8">
       <div className="glass-panel bg-white/80 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 md:p-12 overflow-hidden relative">
@@ -10,41 +13,44 @@ const AboutView = () => {
 
         <div className="relative z-10">
           <h1 className="text-3xl md:text-5xl font-black mb-8 text-slate-900 tracking-tight leading-tight">
-            Про проєкт <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-ukr-blue to-blue-600">Зруйнована Спадщина України</span>
+            {t('about.title', 'Про проєкт')} <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-ukr-blue to-blue-600">
+              {t('about.subtitle', 'Зруйнована Спадщина України')}
+            </span>
           </h1>
 
           <div className="space-y-8 text-slate-600 leading-relaxed text-lg">
             <p className="font-medium text-slate-700 text-xl">
-              Цей цифровий архів є частиною дипломної роботи (Master of Science in Computer Science),
-              спрямованої на вирішення проблеми централізованої фіксації культурних втрат внаслідок
-              військової агресії.
+              {t('about.p1', 'Цей цифровий архів є частиною дипломної роботи (Master of Science in Computer Science), спрямованої на вирішення проблеми централізованої фіксації культурних втрат внаслідок військової агресії.')}
             </p>
 
             <div>
-              <h2 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">Ключові цілі</h2>
+              <h2 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">
+                {t('about.goals', 'Ключові цілі')}
+              </h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl hover:shadow-md transition-shadow">
-                  <h3 className="font-bold text-slate-900 mb-2">🏛️ Меморіалізація</h3>
-                  <p className="text-sm">Збереження пам'яті про втрачені об'єкти культурної спадщини для майбутніх поколінь.</p>
+                  <h3 className="font-bold text-slate-900 mb-2">🏛️ {t('about.mem', 'Меморіалізація')}</h3>
+                  <p className="text-sm">{t('about.mem_d', "Збереження пам'яті про втрачені об'єкти культурної спадщини для майбутніх поколінь.")}</p>
                 </div>
                 <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl hover:shadow-md transition-shadow">
-                  <h3 className="font-bold text-slate-900 mb-2">🔍 Прозорість</h3>
-                  <p className="text-sm">Надання верифікованих даних міжнародним організаціям, дослідникам та громадськості.</p>
+                  <h3 className="font-bold text-slate-900 mb-2">🔍 {t('about.trans', 'Прозорість')}</h3>
+                  <p className="text-sm">{t('about.trans_d', 'Надання верифікованих даних міжнародним організаціям, дослідникам та громадськості.')}</p>
                 </div>
                 <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl hover:shadow-md transition-shadow">
-                  <h3 className="font-bold text-slate-900 mb-2">🗺️ Візуалізація</h3>
-                  <p className="text-sm">Створення інтерактивної мапи для кращого розуміння масштабів руйнувань.</p>
+                  <h3 className="font-bold text-slate-900 mb-2">🗺️ {t('about.vis', 'Візуалізація')}</h3>
+                  <p className="text-sm">{t('about.vis_d', 'Створення інтерактивної мапи для кращого розуміння масштабів руйнувань.')}</p>
                 </div>
                 <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl hover:shadow-md transition-shadow">
-                  <h3 className="font-bold text-slate-900 mb-2">💻 Гуманітаристика</h3>
-                  <p className="text-sm">Впровадження сучасних веб-технологій (GIS, React, Supabase) для соціальних завдань.</p>
+                  <h3 className="font-bold text-slate-900 mb-2">💻 {t('about.hum', 'Гуманітаристика')}</h3>
+                  <p className="text-sm">{t('about.hum_d', 'Впровадження сучасних веб-технологій (GIS, React, Supabase) для соціальних завдань.')}</p>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
               <div className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-ukr-blue mb-4">Технологічний стек</h3>
+                <h3 className="font-black text-ukr-blue mb-4">{t('about.tech', 'Технологічний стек')}</h3>
                 <ul className="space-y-3 text-sm font-medium">
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-ukr-blue"></div> React.js (Frontend)</li>
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-ukr-blue"></div> Leaflet & GeoJSON (Картографія)</li>
@@ -52,7 +58,7 @@ const AboutView = () => {
                 </ul>
               </div>
               <div className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-4">Бекенд та дані</h3>
+                <h3 className="font-black text-slate-900 mb-4">{t('about.backend', 'Бекенд та дані')}</h3>
                 <ul className="space-y-3 text-sm font-medium">
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div> Supabase (BaaS)</li>
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div> PostgreSQL & PostGIS</li>
@@ -64,16 +70,28 @@ const AboutView = () => {
 
           <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between gap-6">
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Студент-розробник</p>
-              <p className="text-sm font-bold text-slate-900">Лифенко Дмитро Миколайович</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">
+                {t('about.student', 'Студент-розробник')}
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {t('about.author', 'Лифенко Дмитро Миколайович')}
+              </p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Науковий керівник</p>
-              <p className="text-sm font-bold text-slate-900">проф. Тетяна Тарасович</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">
+                {t('about.advisor_title', 'Науковий керівник')}
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {t('about.advisor', 'проф. Тетяна Тарасович')}
+              </p>
             </div>
             <div className="md:text-right">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Дані</p>
-              <p className="text-sm font-medium text-slate-600 max-w-xs">МКІП, ЮНЕСКО, відкриті медіа-джерела</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">
+                {t('about.data', 'Дані')}
+              </p>
+              <p className="text-sm font-medium text-slate-600 max-w-xs">
+                {t('about.data_sources', 'МКІП, ЮНЕСКО, відкриті медіа-джерела')}
+              </p>
             </div>
           </div>
         </div>

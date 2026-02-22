@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useLocalizedData } from '../hooks/useLocalizedData'
 
 const AdminPanel = () => {
   const [user, setUser] = useState(null)
@@ -8,6 +10,10 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const navigate = useNavigate()
+
+  // Підключення i18n
+  const { t, i18n } = useTranslation()
+  const { getField } = useLocalizedData()
 
   useEffect(() => {
     checkUser()
@@ -46,7 +52,7 @@ const AdminPanel = () => {
   }
 
   const deleteObject = async (id) => {
-    if (!confirm('Ви впевнені, що хочете видалити цей об\'єкт назавжди?')) return
+    if (!confirm(t('admin.confirm_del', 'Ви впевнені, що хочете видалити цей об\'єкт назавжди?'))) return
     await supabase.from('objects').delete().eq('id', id)
     loadObjects()
   }
@@ -64,6 +70,8 @@ const AdminPanel = () => {
     )
   }
 
+  const locale = i18n.language.startsWith('en') ? 'en-US' : 'uk-UA'
+
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -71,19 +79,19 @@ const AdminPanel = () => {
         {/* Шапка адмінки */}
         <div className="glass-panel bg-white/80 p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Панель модерації</h1>
-            <p className="text-sm text-slate-500 mt-1">Керування базою даних та верифікація звітів</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('admin.panel', 'Панель модерації')}</h1>
+            <p className="text-sm text-slate-500 mt-1">{t('admin.desc', 'Керування базою даних та верифікація звітів')}</p>
           </div>
           <div className="flex gap-4 items-center">
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-slate-400 uppercase">Адміністратор</p>
+              <p className="text-xs font-bold text-slate-400 uppercase">{t('admin.admin_role', 'Адміністратор')}</p>
               <p className="text-sm font-medium text-slate-800">{user.email}</p>
             </div>
             <button
               onClick={signOut}
               className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-5 py-2.5 rounded-xl font-bold transition-colors"
             >
-              Вийти
+              {t('admin.logout', 'Вийти')}
             </button>
           </div>
         </div>
@@ -91,11 +99,11 @@ const AdminPanel = () => {
         {/* Статистика / Фільтри (Опціонально) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-            <p className="text-xs text-slate-500 font-bold uppercase mb-1">Всього записів</p>
+            <p className="text-xs text-slate-500 font-bold uppercase mb-1">{t('admin.total', 'Всього записів')}</p>
             <p className="text-2xl font-black text-slate-900">{objects.length}</p>
           </div>
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-            <p className="text-xs text-slate-500 font-bold uppercase mb-1">Очікують перевірки</p>
+            <p className="text-xs text-slate-500 font-bold uppercase mb-1">{t('admin.pending', 'Очікують перевірки')}</p>
             <p className="text-2xl font-black text-amber-500">{objects.filter(o => !o.is_verified).length}</p>
           </div>
         </div>
@@ -112,15 +120,15 @@ const AdminPanel = () => {
 
                 <div className="w-full md:w-auto flex-grow">
                   <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-lg font-bold text-slate-800">{obj.title}</h3>
+                    <h3 className="text-lg font-bold text-slate-800">{getField(obj, 'title')}</h3>
                     {!obj.is_verified && (
                       <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                        Новий
+                        {t('admin.new', 'Новий')}
                       </span>
                     )}
                   </div>
                   <p className="text-sm text-slate-500">
-                    {obj.region} • Додано: {new Date(obj.created_at).toLocaleDateString('uk')}
+                    {getField(obj, 'region')} • {t('admin.added', 'Додано:')} {new Date(obj.created_at).toLocaleDateString(locale)}
                   </p>
                 </div>
 
@@ -133,21 +141,21 @@ const AdminPanel = () => {
                         : 'bg-white text-amber-600 border border-amber-200 shadow-sm hover:bg-amber-50'
                     }`}
                   >
-                    {obj.is_verified ? '✓ Зняти статус' : 'Підтвердити'}
+                    {obj.is_verified ? t('admin.unapprove', '✓ Зняти статус') : t('admin.approve', 'Підтвердити')}
                   </button>
 
                   <button
                     onClick={() => navigate(`/object/${obj.id}`)}
                     className="flex-1 md:flex-none text-center bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-sm"
                   >
-                    Огляд
+                    {t('admin.view', 'Огляд')}
                   </button>
 
                   <button
                     onClick={() => deleteObject(obj.id)}
                     className="flex-1 md:flex-none text-center bg-white hover:bg-red-50 border border-slate-200 text-red-600 px-4 py-2 rounded-xl text-sm font-bold transition-colors shadow-sm"
                   >
-                    Видалити
+                    {t('admin.delete', 'Видалити')}
                   </button>
                 </div>
 

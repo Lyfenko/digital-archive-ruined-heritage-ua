@@ -1,19 +1,29 @@
+// src/components/GalleryView.jsx
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useLocalizedData } from '../hooks/useLocalizedData'
 
 const GalleryView = ({ objects, loading }) => {
   const [page, setPage] = useState(1)
   const [toast, setToast] = useState(false)
   const PER_PAGE = 12
 
+  // Підключення i18n та хука для БД
+  const { t } = useTranslation()
+  const { getField } = useLocalizedData()
+
   const filteredObjects = useMemo(() => objects, [objects])
   const totalPages = Math.ceil(filteredObjects.length / PER_PAGE)
   const paginated = filteredObjects.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   const shareObject = (obj) => {
-    const text = `Зруйнована спадщина: ${obj.title} — ${window.location.origin}/object/${obj.id}`
+    // Використовуємо локалізовану назву
+    const localizedTitle = getField(obj, 'title')
+    const text = `${t('header.heritage', 'Зруйнована спадщина')}: ${localizedTitle} — ${window.location.origin}/object/${obj.id}`
+
     if (navigator.share) {
-      navigator.share({ title: obj.title, text, url: `${window.location.origin}/object/${obj.id}` })
+      navigator.share({ title: localizedTitle, text, url: `${window.location.origin}/object/${obj.id}` })
     } else {
       navigator.clipboard.writeText(text).then(() => {
         setToast(true)
@@ -48,12 +58,16 @@ const GalleryView = ({ objects, loading }) => {
     <div className="max-w-7xl mx-auto p-4 md:p-8 relative">
       <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Каталог об'єктів</h1>
-          <p className="text-slate-500 mt-2">Задокументовані втрати культурної спадщини</p>
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+            {t('gallery.title', "Каталог об'єктів")}
+          </h1>
+          <p className="text-slate-500 mt-2">
+            {t('gallery.subtitle', 'Задокументовані втрати культурної спадщини')}
+          </p>
         </div>
         {!loading && (
           <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100 text-sm font-medium text-slate-600">
-            Всього записів: {filteredObjects.length}
+            {t('gallery.total', 'Всього записів:')} {filteredObjects.length}
           </div>
         )}
       </div>
@@ -70,7 +84,7 @@ const GalleryView = ({ objects, loading }) => {
                 <Link to={`/object/${obj.id}`} className="relative block overflow-hidden aspect-[4/3]">
                   <img
                     src={obj.photo_after_url}
-                    alt={obj.title}
+                    alt={getField(obj, 'title')}
                     className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute top-4 left-4 flex gap-2">
@@ -82,21 +96,21 @@ const GalleryView = ({ objects, loading }) => {
                 <div className="p-6 flex flex-col flex-grow">
                   <div className="mb-auto">
                     <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400 mb-2 block">
-                      {obj.region}
+                      {getField(obj, 'region')}
                     </span>
                     <h4 className="font-bold text-lg leading-tight text-slate-900 mb-3 group-hover:text-ukr-blue transition-colors line-clamp-2">
-                      {obj.title}
+                      {getField(obj, 'title')}
                     </h4>
                   </div>
 
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${obj.is_verified ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                      {obj.is_verified ? '✓ Верифіковано' : 'На модерації'}
+                      {obj.is_verified ? `✓ ${t('gallery.verified', 'Верифіковано')}` : t('gallery.moderation', 'На модерації')}
                     </span>
                     <button
                       onClick={() => shareObject(obj)}
                       className="text-slate-400 hover:text-ukr-blue transition-colors p-2 -mr-2"
-                      title="Поділитися"
+                      title={t('gallery.share', 'Поділитися')}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-5.368m0 5.368l5.628 3.376m-5.628-3.376l5.628-3.376m1.155 4.502a3 3 0 10-5.368 0m5.368 0l-5.628-3.376" />
@@ -132,10 +146,11 @@ const GalleryView = ({ objects, loading }) => {
       <div className={`fixed bottom-8 right-8 z-[9999] transition-all duration-500 transform ${toast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
         <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-medium">
           <div className="w-2 h-2 rounded-full bg-ukr-yellow animate-pulse"></div>
-          Посилання скопійовано!
+          {t('gallery.copied', 'Посилання скопійовано!')}
         </div>
       </div>
     </div>
   )
 }
+
 export default GalleryView

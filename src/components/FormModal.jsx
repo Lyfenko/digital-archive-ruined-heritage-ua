@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { heritageAPI } from '../lib/supabase' // Імпортуємо наше API для фото
 
 const FormModal = ({ isOpen, onClose, onSubmit }) => {
+  const { t } = useTranslation()
+
   const [formData, setFormData] = useState({
     title: '', coordinates: '', region: '', city_or_settlement: '',
     category: 'culture_house', damage_level: 'destroyed', damage_date: '',
@@ -18,17 +21,17 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
   const [message, setMessage] = useState('')
 
   const categories = [
-    { value: 'church', label: 'Сакральна споруда' },
-    { value: 'museum', label: 'Музей/Галерея' },
-    { value: 'culture_house', label: 'Палац культури/Театр' },
-    { value: 'monument', label: 'Пам\'ятка/Меморіал' },
-    { value: 'other', label: 'Інше' },
+    { value: 'church' },
+    { value: 'museum' },
+    { value: 'culture_house' },
+    { value: 'monument' },
+    { value: 'other' },
   ]
 
   const damageLevels = [
-    { value: 'destroyed', label: 'Повністю зруйновано' },
-    { value: 'heavy', label: 'Сильно пошкоджено' },
-    { value: 'partial', label: 'Частково пошкоджено' },
+    { value: 'destroyed' },
+    { value: 'heavy' },
+    { value: 'partial' },
   ]
 
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -54,16 +57,16 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
 
     try {
       const coordsMatch = formData.coordinates.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/)
-      if (!coordsMatch) throw new Error('Формат координат: широта, довгота (напр. 50.45, 30.52)')
+      if (!coordsMatch) throw new Error(t('form.err_coords', 'Формат координат: широта, довгота (напр. 50.45, 30.52)'))
 
       // Перевіряємо, чи є хоча б фото або посилання
-      if (!files.before && !formData.photo_before_url) throw new Error('Додайте фото "ДО" (файл або посилання)')
-      if (!files.after && !formData.photo_after_url) throw new Error('Додайте фото "ПІСЛЯ" (файл або посилання)')
+      if (!files.before && !formData.photo_before_url) throw new Error(t('form.err_photo_b', 'Додайте фото "ДО" (файл або посилання)'))
+      if (!files.after && !formData.photo_after_url) throw new Error(t('form.err_photo_a', 'Додайте фото "ПІСЛЯ" (файл або посилання)'))
 
       let finalBeforeUrl = formData.photo_before_url
       let finalAfterUrl = formData.photo_after_url
 
-      setMessage('Завантаження фотографій...')
+      setMessage(t('form.msg_uploading', 'Завантаження фотографій...'))
 
       // Якщо користувач вибрав файли — завантажуємо їх у Storage
       if (files.before) {
@@ -73,7 +76,7 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
         finalAfterUrl = await heritageAPI.uploadImage(files.after)
       }
 
-      setMessage('Збереження даних об\'єкта...')
+      setMessage(t('form.msg_saving', 'Збереження даних об\'єкта...'))
 
       const objectData = {
         ...formData,
@@ -85,10 +88,10 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
       const result = await onSubmit(objectData)
 
       if (result.success) {
-        setMessage('✓ Об\'єкт успішно додано! Очікуйте модерацію.')
+        setMessage(t('form.msg_success', '✓ Об\'єкт успішно додано! Очікуйте модерацію.'))
         setTimeout(handleClose, 2000)
       } else {
-        setMessage(result.message || 'Помилка при відправці')
+        setMessage(result.message || t('form.err_submit', 'Помилка при відправці'))
       }
     } catch (err) {
       setMessage(err.message)
@@ -111,8 +114,8 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
 
           <div className="flex justify-between items-center p-8 border-b border-slate-100">
             <div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Новий об'єкт</h2>
-              <p className="text-sm text-slate-500 mt-1">Додайте інформацію про зруйновану пам'ятку</p>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t('form.title', "Новий об'єкт")}</h2>
+              <p className="text-sm text-slate-500 mt-1">{t('form.subtitle', "Додайте інформацію про зруйновану пам'ятку")}</p>
             </div>
             <button onClick={handleClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -121,31 +124,31 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div><label className={labelClass}>Назва об'єкта *</label><input type="text" name="title" value={formData.title} onChange={handleChange} required className={inputClass} placeholder="Церква Різдва Богородиці" /></div>
-              <div><label className={labelClass}>Координати *</label><input type="text" name="coordinates" value={formData.coordinates} onChange={handleChange} required className={`${inputClass} font-mono`} placeholder="50.4501, 30.5234" /></div>
-              <div><label className={labelClass}>Область *</label><input type="text" name="region" value={formData.region} onChange={handleChange} required className={inputClass} placeholder="Київська область" /></div>
-              <div><label className={labelClass}>Місто / Село *</label><input type="text" name="city_or_settlement" value={formData.city_or_settlement} onChange={handleChange} required className={inputClass} placeholder="Ірпінь" /></div>
+              <div><label className={labelClass}>{t('form.labels.title', "Назва об'єкта *")}</label><input type="text" name="title" value={formData.title} onChange={handleChange} required className={inputClass} placeholder="Церква Різдва Богородиці" /></div>
+              <div><label className={labelClass}>{t('form.labels.coords', "Координати *")}</label><input type="text" name="coordinates" value={formData.coordinates} onChange={handleChange} required className={`${inputClass} font-mono`} placeholder="50.4501, 30.5234" /></div>
+              <div><label className={labelClass}>{t('form.labels.region', "Область *")}</label><input type="text" name="region" value={formData.region} onChange={handleChange} required className={inputClass} placeholder="Київська область" /></div>
+              <div><label className={labelClass}>{t('form.labels.city', "Місто / Село *")}</label><input type="text" name="city_or_settlement" value={formData.city_or_settlement} onChange={handleChange} required className={inputClass} placeholder="Ірпінь" /></div>
 
               <div>
-                <label className={labelClass}>Категорія *</label>
+                <label className={labelClass}>{t('form.labels.cat', "Категорія *")}</label>
                 <select name="category" value={formData.category} onChange={handleChange} required className={inputClass}>
-                  {categories.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
+                  {categories.map(cat => <option key={cat.value} value={cat.value}>{t(`enums.cat.${cat.value}`)}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className={labelClass}>Ступінь пошкодження *</label>
+                <label className={labelClass}>{t('form.labels.dmg', "Ступінь пошкодження *")}</label>
                 <select name="damage_level" value={formData.damage_level} onChange={handleChange} required className={inputClass}>
-                  {damageLevels.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                  {damageLevels.map(d => <option key={d.value} value={d.value}>{t(`enums.dmg.${d.value}`)}</option>)}
                 </select>
               </div>
 
-              <div className="md:col-span-2"><label className={labelClass}>Дата пошкодження</label><input type="date" name="damage_date" value={formData.damage_date} onChange={handleChange} className={inputClass} /></div>
-              <div className="md:col-span-2"><label className={labelClass}>Опис</label><textarea name="description" value={formData.description} onChange={handleChange} rows="3" className={inputClass} placeholder="Коротка інформація про об'єкт та обставини руйнування..." /></div>
+              <div className="md:col-span-2"><label className={labelClass}>{t('form.labels.date', "Дата пошкодження")}</label><input type="date" name="damage_date" value={formData.damage_date} onChange={handleChange} className={inputClass} /></div>
+              <div className="md:col-span-2"><label className={labelClass}>{t('form.labels.desc', "Опис")}</label><textarea name="description" value={formData.description} onChange={handleChange} rows="3" className={inputClass} placeholder="..." /></div>
 
               {/* БЛОК ФОТО "ДО" */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <label className={labelClass}>Фото "ДО"</label>
+                <label className={labelClass}>{t('form.labels.photo_b', "Фото 'ДО'")}</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -154,14 +157,14 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
                 />
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-slate-300"></div></div>
-                  <div className="relative flex justify-center"><span className="bg-slate-50 px-2 text-[10px] uppercase font-bold text-slate-400">АБО ПОСИЛАННЯ</span></div>
+                  <div className="relative flex justify-center"><span className="bg-slate-50 px-2 text-[10px] uppercase font-bold text-slate-400">{t('form.labels.url', "АБО ПОСИЛАННЯ")}</span></div>
                 </div>
                 <input type="url" name="photo_before_url" value={formData.photo_before_url} onChange={handleChange} disabled={!!files.before} className={`${inputClass} mt-3 ${files.before ? 'opacity-50 cursor-not-allowed' : ''}`} placeholder="https://..." />
               </div>
 
               {/* БЛОК ФОТО "ПІСЛЯ" */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <label className={labelClass}>Фото "ПІСЛЯ"</label>
+                <label className={labelClass}>{t('form.labels.photo_a', "Фото 'ПІСЛЯ'")}</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -170,22 +173,22 @@ const FormModal = ({ isOpen, onClose, onSubmit }) => {
                 />
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-slate-300"></div></div>
-                  <div className="relative flex justify-center"><span className="bg-slate-50 px-2 text-[10px] uppercase font-bold text-slate-400">АБО ПОСИЛАННЯ</span></div>
+                  <div className="relative flex justify-center"><span className="bg-slate-50 px-2 text-[10px] uppercase font-bold text-slate-400">{t('form.labels.url', "АБО ПОСИЛАННЯ")}</span></div>
                 </div>
                 <input type="url" name="photo_after_url" value={formData.photo_after_url} onChange={handleChange} disabled={!!files.after} className={`${inputClass} mt-3 ${files.after ? 'opacity-50 cursor-not-allowed' : ''}`} placeholder="https://..." />
               </div>
 
-              <div className="md:col-span-2"><label className={labelClass}>Офіційне джерело (URL) *</label><input type="url" name="source_url" value={formData.source_url} onChange={handleChange} required className={inputClass} placeholder="Посилання на новину чи звіт" /></div>
+              <div className="md:col-span-2"><label className={labelClass}>{t('form.labels.source', "Офіційне джерело (URL) *")}</label><input type="url" name="source_url" value={formData.source_url} onChange={handleChange} required className={inputClass} placeholder="https://..." /></div>
             </div>
 
-            {message && <p className={`text-center text-sm font-bold p-4 rounded-xl border ${message.includes('✓') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : message.includes('Завантаження') ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{message}</p>}
+            {message && <p className={`text-center text-sm font-bold p-4 rounded-xl border ${message.includes('✓') || message.includes('Success') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : message.includes('Завантаження') || message.includes('uploading') ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{message}</p>}
 
             <div className="flex gap-4 pt-4 border-t border-slate-100">
               <button type="button" onClick={handleClose} className="px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold transition-colors">
-                Скасувати
+                {t('form.cancel', "Скасувати")}
               </button>
               <button type="submit" disabled={isSubmitting} className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl transition shadow-md hover:shadow-lg disabled:opacity-50">
-                {isSubmitting ? 'Опрацювання...' : 'Надіслати звіт'}
+                {isSubmitting ? t('form.processing', "Опрацювання...") : t('form.submit', "Надіслати звіт")}
               </button>
             </div>
           </form>
